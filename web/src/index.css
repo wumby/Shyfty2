@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-bg text-ink antialiased;
+  background-image:
+    radial-gradient(circle at top right, rgba(73, 166, 255, 0.16), transparent 32%),
+    linear-gradient(180deg, #091526 0%, #07111f 100%);
+  min-height: 100vh;
+  font-family: "SF Mono", "IBM Plex Mono", ui-monospace, monospace;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.glass-panel {
+  @apply border border-border bg-panel/85 shadow-bloom backdrop-blur;
+}
+
