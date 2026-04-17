@@ -1,5 +1,8 @@
 from pydantic import BaseModel
 
+from app.schemas.player import PlayerRead
+from app.schemas.signal import SignalRead
+
 
 class TeamRead(BaseModel):
     id: int
@@ -7,3 +10,7 @@ class TeamRead(BaseModel):
     league_name: str
     player_count: int
 
+
+class TeamDetail(TeamRead):
+    players: list[PlayerRead]
+    recent_signals: list[SignalRead]

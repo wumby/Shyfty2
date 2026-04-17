@@ -20,7 +20,7 @@ from app.models.rolling_metric import RollingMetric
 from app.models.signal import Signal
 from app.models.team import Team
 from app.schemas.reaction import ReactionSummaryRead
-from app.schemas.signal import SignalRead, SignalSummaryTemplateInputs
+from app.schemas.signal import PaginatedSignals, SignalRead, SignalSummaryTemplateInputs
 from app.services.reaction_service import get_reaction_summaries, get_user_reactions
 
 
@@ -82,9 +82,10 @@ def list_signals(
     team: Optional[str],
     player: Optional[str],
     signal_type: Optional[str],
-    limit: int,
+    limit: int = 24,
+    before_id: Optional[int] = None,
     current_user_id: Optional[int] = None,
-) -> list[SignalRead]:
+) -> PaginatedSignals:
     query = (
         select(Signal, Player.name, Team.name, League.name, Game.game_date, RollingMetric.rolling_stddev)
         .join(Player, Signal.player_id == Player.id)
@@ -99,8 +100,8 @@ def list_signals(
                 RollingMetric.metric_name == Signal.metric_name,
             ),
         )
-        .order_by(Signal.created_at.desc())
-        .limit(limit)
+        .order_by(Signal.created_at.desc(), Signal.id.desc())
+        .limit(limit + 1)
     )
 
     if league:
@@ -111,12 +112,19 @@ def list_signals(
         query = query.where(Player.name.ilike(f"%{player}%"))
     if signal_type:
         query = query.where(Signal.signal_type.ilike(signal_type))
+    if before_id is not None:
+        query = query.where(Signal.id < before_id)
 
     rows = db.execute(query).all()
+
+    has_more = len(rows) > limit
+    rows = rows[:limit]
+
     signal_ids = [signal.id for signal, *_ in rows]
     reaction_summaries = get_reaction_summaries(db, signal_ids)
     user_reactions = get_user_reactions(db, user_id=current_user_id, signal_ids=signal_ids)
-    return [
+
+    items = [
         build_signal_read(
             signal,
             player_name,
@@ -129,3 +137,7 @@ def list_signals(
         )
         for signal, player_name, team_name, league_name, event_date, rolling_stddev in rows
     ]
+
+    next_cursor = items[-1].id if has_more and items else None
+
+    return PaginatedSignals(items=items, has_more=has_more, next_cursor=next_cursor)

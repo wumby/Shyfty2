@@ -88,3 +88,9 @@ class SignalTraceRead(BaseModel):
     rolling_metric: RollingMetricTraceRead
     source_stat: SourceStatContextRead
     baseline_samples: list[BaselineSampleRead]
+
+
+class PaginatedSignals(BaseModel):
+    items: list[SignalRead]
+    has_more: bool
+    next_cursor: Optional[int]
