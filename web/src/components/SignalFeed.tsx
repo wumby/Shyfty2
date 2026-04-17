@@ -40,7 +40,10 @@ export function SignalFeed({ signals, onOpenDetail, paginated = false }: SignalF
   if (!signals.length) {
     return (
       <div className="h-full overflow-y-auto" ref={containerRef}>
-        <EmptyState title="No signals in this view" copy="Broaden the league or signal type filter." />
+        <EmptyState
+          title="No signals in this view"
+          copy="Try broadening the league or signal type filter. New signals appear when games are ingested."
+        />
       </div>
     );
   }
