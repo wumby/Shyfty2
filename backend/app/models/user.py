@@ -17,3 +17,4 @@ class User(Base):
 
     sessions = relationship("UserSession", back_populates="user", cascade="all, delete-orphan")
     reactions = relationship("SignalReaction", back_populates="user", cascade="all, delete-orphan")
+    comments = relationship("SignalComment", back_populates="user", cascade="all, delete-orphan")

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import type { Signal } from '../types';
 import type { ReactionType } from '../types';
 import {
@@ -13,6 +15,7 @@ import {
 } from '../lib/signalFormat';
 import { useAuthStore } from '../store/useAuthStore';
 import { useSignalStore } from '../store/useSignalStore';
+import { CommentsPanel } from './CommentsPanel';
 
 const toneMap: Record<Signal['signal_type'], string> = {
   SPIKE: 'bg-green-950/60 text-green-400 border border-green-800/50',
@@ -77,6 +80,7 @@ export function SignalCard({ signal, onOpenDetail }: { signal: Signal; onOpenDet
   const currentUser = useAuthStore((state) => state.currentUser);
   const openAuth = useAuthStore((state) => state.openAuth);
   const reactToSignal = useSignalStore((state) => state.reactToSignal);
+  const [showComments, setShowComments] = useState(false);
 
   async function handleReactionClick(reactionType: ReactionType) {
     if (!currentUser) {
@@ -154,6 +158,13 @@ export function SignalCard({ signal, onOpenDetail }: { signal: Signal; onOpenDet
               </button>
             );
           })}
+          <button
+            type="button"
+            onClick={() => setShowComments((v) => !v)}
+            className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.14em] transition ${showComments ? 'text-slate-300' : 'text-slate-600 hover:text-slate-400'}`}
+          >
+            {showComments ? 'Hide' : 'Comments'}
+          </button>
           {onOpenDetail != null && (
             <button
               type="button"
@@ -164,6 +175,11 @@ export function SignalCard({ signal, onOpenDetail }: { signal: Signal; onOpenDet
             </button>
           )}
         </div>
+        {showComments && (
+          <div className="mt-2 border-t border-slate-800/60 pt-2">
+            <CommentsPanel signalId={signal.id} />
+          </div>
+        )}
       </div>
       <div className="self-center justify-self-end text-right">
         <div className={`text-[25px] font-semibold tracking-tight tabular-nums ${directionStyles.delta}`}>{formatDelta(signal)}</div>

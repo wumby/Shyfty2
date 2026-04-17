@@ -5,6 +5,7 @@ from app.models.player_game_stat import PlayerGameStat
 from app.models.rolling_metric import RollingMetric
 from app.models.rolling_metric_baseline_sample import RollingMetricBaselineSample
 from app.models.signal import Signal
+from app.models.signal_comment import SignalComment
 from app.models.signal_reaction import SignalReaction
 from app.models.team import Team
 from app.models.user import User
@@ -18,6 +19,7 @@ __all__ = [
     "RollingMetric",
     "RollingMetricBaselineSample",
     "Signal",
+    "SignalComment",
     "SignalReaction",
     "Team",
     "User",
