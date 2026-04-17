@@ -1,5 +1,23 @@
 import Foundation
 
+struct PaginatedSignals: Decodable {
+    let items: [Signal]
+    let hasMore: Bool
+    let nextCursor: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case items
+        case hasMore = "has_more"
+        case nextCursor = "next_cursor"
+    }
+}
+
+struct ReactionSummary: Decodable, Hashable {
+    let strong: Int
+    let agree: Int
+    let risky: Int
+}
+
 struct Signal: Identifiable, Decodable, Hashable {
     struct SummaryTemplateInputs: Decodable, Hashable {
         let currentValue: Double
@@ -30,13 +48,15 @@ struct Signal: Identifiable, Decodable, Hashable {
     let explanation: String
     let importance: Double
     let baselineWindow: String
-    let eventDate: Date
+    let eventDate: String
     let movementPct: Double?
     let metricLabel: String
     let trendDirection: String
     let summaryTemplate: String
     let summaryTemplateInputs: SummaryTemplateInputs
-    let createdAt: Date
+    let reactionSummary: ReactionSummary
+    let userReaction: String?
+    let createdAt: String
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -58,6 +78,8 @@ struct Signal: Identifiable, Decodable, Hashable {
         case trendDirection = "trend_direction"
         case summaryTemplate = "summary_template"
         case summaryTemplateInputs = "summary_template_inputs"
+        case reactionSummary = "reaction_summary"
+        case userReaction = "user_reaction"
         case createdAt = "created_at"
     }
 }
@@ -81,11 +103,27 @@ struct Player: Identifiable, Decodable, Hashable {
 }
 
 struct MetricSeriesPoint: Decodable, Hashable {
-    let gameDate: Date
+    let gameDate: String
     let metrics: [String: Double]
 
     enum CodingKeys: String, CodingKey {
         case gameDate = "game_date"
         case metrics
     }
+}
+
+struct AuthUser: Decodable, Hashable {
+    let id: Int
+    let email: String
+    let createdAt: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case email
+        case createdAt = "created_at"
+    }
+}
+
+struct AuthSession: Decodable {
+    let user: AuthUser?
 }
