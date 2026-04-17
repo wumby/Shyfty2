@@ -33,3 +33,4 @@ class Signal(Base):
     league = relationship("League", back_populates="signals")
     rolling_metric = relationship("RollingMetric", back_populates="signals")
     source_stat = relationship("PlayerGameStat", back_populates="source_signals", foreign_keys=[source_stat_id])
+    reactions = relationship("SignalReaction", back_populates="signal", cascade="all, delete-orphan")

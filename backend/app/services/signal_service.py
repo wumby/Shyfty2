@@ -19,7 +19,9 @@ from app.models.player import Player
 from app.models.rolling_metric import RollingMetric
 from app.models.signal import Signal
 from app.models.team import Team
+from app.schemas.reaction import ReactionSummaryRead
 from app.schemas.signal import SignalRead, SignalSummaryTemplateInputs
+from app.services.reaction_service import get_reaction_summaries, get_user_reactions
 
 
 def build_signal_read(
@@ -29,6 +31,8 @@ def build_signal_read(
     league_name: str,
     event_date,
     rolling_stddev: Optional[float],
+    reaction_summary: Optional[ReactionSummaryRead] = None,
+    user_reaction: Optional[str] = None,
 ) -> SignalRead:
     baseline_window = baseline_window_label()
     movement = movement_pct(signal.current_value, signal.baseline_value)
@@ -66,6 +70,8 @@ def build_signal_read(
             baseline_window=baseline_window,
             trend_direction=direction,
         ),
+        reaction_summary=reaction_summary or ReactionSummaryRead(),
+        user_reaction=user_reaction,
         created_at=signal.created_at,
     )
 
@@ -77,6 +83,7 @@ def list_signals(
     player: Optional[str],
     signal_type: Optional[str],
     limit: int,
+    current_user_id: Optional[int] = None,
 ) -> list[SignalRead]:
     query = (
         select(Signal, Player.name, Team.name, League.name, Game.game_date, RollingMetric.rolling_stddev)
@@ -106,7 +113,19 @@ def list_signals(
         query = query.where(Signal.signal_type.ilike(signal_type))
 
     rows = db.execute(query).all()
+    signal_ids = [signal.id for signal, *_ in rows]
+    reaction_summaries = get_reaction_summaries(db, signal_ids)
+    user_reactions = get_user_reactions(db, user_id=current_user_id, signal_ids=signal_ids)
     return [
-        build_signal_read(signal, player_name, team_name, league_name, event_date, rolling_stddev)
+        build_signal_read(
+            signal,
+            player_name,
+            team_name,
+            league_name,
+            event_date,
+            rolling_stddev,
+            reaction_summary=reaction_summaries.get(signal.id),
+            user_reaction=user_reactions.get(signal.id),
+        )
         for signal, player_name, team_name, league_name, event_date, rolling_stddev in rows
     ]

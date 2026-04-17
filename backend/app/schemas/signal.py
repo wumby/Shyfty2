@@ -3,6 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from app.schemas.reaction import ReactionSummaryRead, ReactionType
+
 
 class SignalSummaryTemplateInputs(BaseModel):
     current_value: float
@@ -37,6 +39,8 @@ class SignalRead(BaseModel):
     classification_reason: str
     summary_template: str
     summary_template_inputs: SignalSummaryTemplateInputs
+    reaction_summary: ReactionSummaryRead
+    user_reaction: Optional[ReactionType]
     created_at: datetime
 
 
