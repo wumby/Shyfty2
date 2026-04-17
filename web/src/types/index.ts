@@ -1,4 +1,17 @@
 export type SignalType = 'SPIKE' | 'DROP' | 'SHIFT' | 'CONSISTENCY' | 'OUTLIER';
+export type ReactionType = 'strong' | 'agree' | 'risky';
+
+export interface ReactionSummary {
+  strong: number;
+  agree: number;
+  risky: number;
+}
+
+export interface User {
+  id: number;
+  email: string;
+  created_at: string;
+}
 
 export interface Signal {
   id: number;
@@ -26,6 +39,8 @@ export interface Signal {
     baseline_window: string;
     trend_direction: 'up' | 'down' | 'flat';
   };
+  reaction_summary: ReactionSummary;
+  user_reaction: ReactionType | null;
   created_at: string;
 }
 

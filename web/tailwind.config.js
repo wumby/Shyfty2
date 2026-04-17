@@ -4,18 +4,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: '#07111f',
-        panel: '#0d1b2f',
-        border: '#18304d',
-        accent: '#49a6ff',
-        ink: '#e8f0ff',
-        muted: '#8aa3c1',
-      },
-      boxShadow: {
-        bloom: '0 18px 60px rgba(12, 27, 46, 0.45)',
+        bg: '#0F172A',
+        panel: '#1E293B',
+        border: '#334155',
+        accent: '#3B82F6',
+        ink: '#F1F5F9',
+        muted: '#94A3B8',
       },
     },
   },
   plugins: [],
 };
-

@@ -1,25 +1,26 @@
 export function LoadingState() {
   return (
-    <div className="rounded-[28px] bg-white/[0.03] p-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
-      <div className="animate-pulse space-y-5">
-        <div className="flex items-center justify-between">
-          <div className="h-3 w-28 rounded-full bg-white/10" />
-          <div className="h-8 w-32 rounded-full bg-white/5" />
-        </div>
-        {[0, 1, 2].map((item) => (
-          <div key={item} className="rounded-[24px] bg-white/[0.035] p-6 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
-            <div className="flex flex-col gap-4 lg:flex-row lg:justify-between">
-              <div className="flex-1 space-y-3">
-                <div className="h-7 w-32 rounded-full bg-white/10" />
-                <div className="h-8 w-52 rounded-full bg-white/10" />
-                <div className="h-4 w-full max-w-2xl rounded-full bg-white/5" />
-                <div className="h-4 w-full max-w-xl rounded-full bg-white/5" />
-              </div>
-              <div className="h-28 w-full rounded-[22px] bg-white/[0.04] lg:max-w-[260px]" />
+    <div className="animate-pulse">
+      {[0, 1, 2, 3, 4].map((item) => (
+        <div
+          key={item}
+          className="grid grid-cols-[minmax(0,1fr),120px] items-center gap-4 border-b border-slate-800 px-3 py-3.5 last:border-b-0 sm:grid-cols-[minmax(0,1.6fr),140px] sm:px-4"
+        >
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-14 rounded-full bg-slate-800" />
+              <div className="h-4 w-12 rounded-full bg-slate-800/60" />
             </div>
+            <div className="h-5 w-44 rounded-full bg-slate-800" />
+            <div className="h-3.5 w-full max-w-xl rounded-full bg-slate-800/60" />
+            <div className="h-3 w-40 rounded-full bg-slate-800/60" />
           </div>
-        ))}
-      </div>
+          <div className="justify-self-end space-y-2 text-right">
+            <div className="ml-auto h-7 w-16 rounded-full bg-slate-800" />
+            <div className="ml-auto h-3 w-24 rounded-full bg-slate-800/60" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

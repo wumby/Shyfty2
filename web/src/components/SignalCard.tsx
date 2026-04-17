@@ -1,8 +1,8 @@
 import type { Signal } from '../types';
+import type { ReactionType } from '../types';
 import {
   formatDelta,
   formatEventDate,
-  formatMovementLabel,
   formatRelativeTime,
   formatSignalLabel,
   getImportanceScore,
@@ -11,66 +11,62 @@ import {
   formatSignalSummary,
   getSignalDirection,
 } from '../lib/signalFormat';
+import { useAuthStore } from '../store/useAuthStore';
+import { useSignalStore } from '../store/useSignalStore';
 
 const toneMap: Record<Signal['signal_type'], string> = {
-  SPIKE: 'bg-emerald-400/14 text-emerald-100 shadow-[inset_0_0_0_1px_rgba(74,222,128,0.2)]',
-  DROP: 'bg-rose-400/14 text-rose-100 shadow-[inset_0_0_0_1px_rgba(251,113,133,0.2)]',
-  SHIFT: 'bg-amber-300/14 text-amber-100 shadow-[inset_0_0_0_1px_rgba(252,211,77,0.2)]',
-  CONSISTENCY: 'bg-cyan-400/14 text-cyan-100 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.2)]',
-  OUTLIER: 'bg-fuchsia-400/14 text-fuchsia-100 shadow-[inset_0_0_0_1px_rgba(232,121,249,0.2)]',
-};
-
-const importanceTone: Record<'High' | 'Medium' | 'Watch', string> = {
-  High: 'bg-white/[0.1] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]',
-  Medium: 'bg-white/[0.06] text-slate-100 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]',
-  Watch: 'bg-white/[0.045] text-slate-300 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]',
-};
-
-const cardTone: Record<'High' | 'Medium' | 'Watch', string> = {
-  High: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03))] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_22px_60px_rgba(0,0,0,0.24)]',
-  Medium: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.028))] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_18px_44px_rgba(0,0,0,0.2)]',
-  Watch: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.024))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_16px_40px_rgba(0,0,0,0.18)]',
+  SPIKE: 'bg-green-950/60 text-green-400 border border-green-800/50',
+  DROP: 'bg-red-950/60 text-red-400 border border-red-800/50',
+  SHIFT: 'bg-amber-950/60 text-amber-400 border border-amber-800/50',
+  CONSISTENCY: 'bg-blue-950/60 text-blue-400 border border-blue-800/50',
+  OUTLIER: 'bg-purple-950/60 text-purple-400 border border-purple-800/50',
 };
 
 const directionTone: Record<'positive' | 'negative' | 'neutral', {
-  accent: string;
-  cardGlow: string;
+  rowGlow: string;
   rail: string;
   summary: string;
   delta: string;
-  statBox: string;
+  meta: string;
+  context: string;
 }> = {
   positive: {
-    accent: 'bg-emerald-300/7',
-    cardGlow: 'hover:shadow-[0_22px_56px_rgba(7,23,33,0.32),0_0_0_1px_rgba(94,234,212,0.08)]',
-    rail: 'from-emerald-300/55 to-teal-300/15',
-    summary: 'text-emerald-50',
-    delta: 'text-emerald-200',
-    statBox: 'bg-emerald-300/[0.045] shadow-[inset_0_0_0_1px_rgba(110,231,183,0.08)]',
+    rowGlow: 'hover:bg-slate-800/60',
+    rail: 'bg-green-500',
+    summary: 'text-slate-100',
+    delta: 'text-green-400',
+    meta: 'text-slate-400',
+    context: 'text-slate-500',
   },
   negative: {
-    accent: 'bg-orange-300/7',
-    cardGlow: 'hover:shadow-[0_22px_56px_rgba(24,14,14,0.34),0_0_0_1px_rgba(251,146,60,0.08)]',
-    rail: 'from-rose-300/55 to-orange-300/16',
-    summary: 'text-rose-50',
-    delta: 'text-orange-200',
-    statBox: 'bg-orange-300/[0.045] shadow-[inset_0_0_0_1px_rgba(251,146,60,0.08)]',
+    rowGlow: 'hover:bg-slate-800/60',
+    rail: 'bg-red-500',
+    summary: 'text-slate-100',
+    delta: 'text-red-400',
+    meta: 'text-slate-400',
+    context: 'text-slate-500',
   },
   neutral: {
-    accent: 'bg-slate-200/5',
-    cardGlow: 'hover:shadow-[0_20px_52px_rgba(6,11,20,0.32),0_0_0_1px_rgba(148,163,184,0.06)]',
-    rail: 'from-sky-200/38 to-slate-300/14',
-    summary: 'text-sky-50',
-    delta: 'text-sky-200',
-    statBox: 'bg-sky-200/[0.04] shadow-[inset_0_0_0_1px_rgba(148,163,184,0.07)]',
+    rowGlow: 'hover:bg-slate-800/60',
+    rail: 'bg-slate-500',
+    summary: 'text-slate-100',
+    delta: 'text-slate-300',
+    meta: 'text-slate-400',
+    context: 'text-slate-500',
   },
 };
 
 const importanceBadgeTone: Record<'High' | 'Medium' | 'Watch', string> = {
-  High: 'bg-white/[0.12] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14),0_0_24px_rgba(73,166,255,0.08)]',
-  Medium: 'bg-white/[0.07] text-slate-100 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]',
-  Watch: 'bg-white/[0.045] text-slate-300 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]',
+  High: 'bg-blue-950/60 text-blue-400 border border-blue-800/50',
+  Medium: 'bg-slate-800/60 text-slate-400 border border-slate-700/50',
+  Watch: 'bg-slate-900/60 text-slate-500 border border-slate-700/30',
 };
+
+const reactionMeta: Array<{ type: ReactionType; label: string }> = [
+  { type: 'strong', label: 'Strong' },
+  { type: 'agree', label: 'Agree' },
+  { type: 'risky', label: 'Risky' },
+];
 
 export function SignalCard({ signal }: { signal: Signal }) {
   const importance = getImportance(signal);
@@ -78,61 +74,94 @@ export function SignalCard({ signal }: { signal: Signal }) {
   const summary = formatSignalSummary(signal);
   const direction = getSignalDirection(signal);
   const directionStyles = directionTone[direction];
+  const currentUser = useAuthStore((state) => state.currentUser);
+  const openAuth = useAuthStore((state) => state.openAuth);
+  const reactToSignal = useSignalStore((state) => state.reactToSignal);
+
+  async function handleReactionClick(reactionType: ReactionType) {
+    if (!currentUser) {
+      openAuth('signin');
+      return;
+    }
+    try {
+      await reactToSignal(signal.id, reactionType);
+    } catch {
+      // store handles rollback + error state
+    }
+  }
 
   return (
-    <article className={`group rounded-[28px] p-[1px] transition duration-200 hover:-translate-y-1 ${importance === 'High' ? 'bg-[linear-gradient(180deg,rgba(73,166,255,0.28),rgba(255,255,255,0.05))]' : 'bg-white/[0.06]'}`}>
-      <div className={`relative overflow-hidden rounded-[27px] px-5 py-6 sm:px-6 ${cardTone[importance]} ${directionStyles.cardGlow}`}>
-        <div className={`pointer-events-none absolute inset-y-5 left-0 w-1 rounded-r-full bg-gradient-to-b ${directionStyles.rail} ${importance === 'Watch' ? 'opacity-55' : 'opacity-100'}`} />
-        <div className={`pointer-events-none absolute inset-x-0 top-0 h-24 ${directionStyles.accent} blur-2xl`} />
-        <div className="relative flex flex-col gap-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0 space-y-4">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className={`rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] ${toneMap[signal.signal_type]}`}>
-                  {formatSignalLabel(signal.signal_type)}
-                </span>
-                <span className={`rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] ${importanceBadgeTone[importance]}`}>
-                  {importance}
-                </span>
-              </div>
-              <div>
-                <h3 className="text-[28px] font-semibold tracking-[-0.04em] text-ink">{signal.player_name}</h3>
-                <div className="mt-1 text-sm text-slate-300">
-                  {signal.team_name} <span className="text-slate-500">•</span> {signal.league_name}
-                </div>
-              </div>
-              <div className="max-w-3xl space-y-2.5">
-                <p className={`text-[18px] font-medium leading-7 ${directionStyles.summary}`}>{summary}</p>
-                <p className="text-sm leading-6 text-slate-400">{signal.explanation}</p>
-              </div>
-            </div>
-            <div className={`grid min-w-[240px] gap-4 rounded-[22px] px-4 py-4 lg:max-w-[290px] lg:justify-items-end lg:text-right ${directionStyles.statBox}`}>
-              <div className="w-full">
-                <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500">{getMetricLabel(signal)}</div>
-                <div className={`mt-1.5 text-[40px] font-semibold tracking-[-0.06em] ${directionStyles.delta}`}>{formatDelta(signal)}</div>
-                <div className="mt-1 text-sm text-slate-300">{formatMovementLabel(signal)}</div>
-              </div>
-              <div className="grid w-full grid-cols-2 gap-3 text-left lg:text-right">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Current</div>
-                  <div className="mt-1 text-base font-semibold text-ink">{signal.current_value.toFixed(1)}</div>
-                </div>
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Baseline</div>
-                  <div className="mt-1 text-sm font-medium text-slate-300">{signal.baseline_value.toFixed(1)}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/6 pt-4 text-xs text-slate-500">
-            <span>{signal.baseline_window ?? 'Recent baseline'}</span>
-            {signal.event_date ? <span>Game {formatEventDate(signal.event_date)}</span> : null}
-            <span>Importance {importanceScore.toFixed(0)}</span>
-            <span>Z-score {signal.z_score.toFixed(2)}</span>
-            <span>{formatRelativeTime(signal.created_at)}</span>
-            <span>{new Date(signal.created_at).toLocaleString()}</span>
-          </div>
+    <article
+      className={`group relative grid grid-cols-[minmax(0,1fr),112px] gap-3 border-b border-slate-800 bg-transparent px-3 py-3 transition duration-150 sm:grid-cols-[minmax(0,1.75fr),132px] sm:px-4 sm:py-3 ${directionStyles.rowGlow}`}
+    >
+      <div className={`absolute inset-y-2.5 left-0 w-[3px] rounded-full ${directionStyles.rail} ${importance === 'Watch' ? 'opacity-35' : 'opacity-75'}`} />
+      <div className="min-w-0 pl-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] ${toneMap[signal.signal_type]}`}>
+            {formatSignalLabel(signal.signal_type)}
+          </span>
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] ${importanceBadgeTone[importance]}`}>
+            {importance}
+          </span>
+        </div>
+        <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+          <h3 className="text-[17px] font-semibold tracking-[-0.03em] text-slate-100">{signal.player_name}</h3>
+          <span className="text-xs uppercase tracking-[0.16em] text-slate-500">{getMetricLabel(signal)}</span>
+        </div>
+        <p className={`mt-1 text-[14px] font-medium leading-5 ${directionStyles.summary}`}>{summary}</p>
+        <div className={`mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] ${directionStyles.meta}`}>
+          <span>{signal.team_name}</span>
+          <span className="text-slate-700">•</span>
+          <span>{signal.league_name}</span>
+          {signal.event_date ? (
+            <>
+              <span className="text-slate-700">•</span>
+              <span>{formatEventDate(signal.event_date)}</span>
+            </>
+          ) : null}
+          <span className="text-slate-700">•</span>
+          <span>Z {signal.z_score.toFixed(2)}</span>
+          <span className="text-slate-700">•</span>
+          <span>{formatRelativeTime(signal.created_at)}</span>
+          {importance === 'High' ? (
+            <>
+              <span className="text-slate-700">•</span>
+              <span>{importanceScore.toFixed(0)}</span>
+            </>
+          ) : null}
+        </div>
+        <div className={`mt-1 text-[11px] leading-4 ${directionStyles.context}`}>{signal.explanation}</div>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          {reactionMeta.map(({ type, label }) => {
+            const active = signal.user_reaction === type;
+            const count = signal.reaction_summary[type];
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => void handleReactionClick(type)}
+                className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.14em] transition ${
+                  active
+                    ? type === 'strong'
+                      ? 'bg-transparent text-green-400'
+                      : type === 'risky'
+                        ? 'bg-transparent text-amber-400'
+                        : 'bg-transparent text-blue-400'
+                    : 'bg-transparent text-slate-600 hover:text-slate-400'
+                }`}
+              >
+                {label} {count > 0 ? count : ''}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="self-center justify-self-end text-right">
+        <div className={`text-[25px] font-semibold tracking-tight tabular-nums ${directionStyles.delta}`}>{formatDelta(signal)}</div>
+        <div className="mt-0.5 text-[11px]">
+          <span className="font-medium text-slate-100">{signal.current_value.toFixed(1)}</span>
+          <span className="mx-1 text-slate-700">/</span>
+          <span className="text-slate-500">{signal.baseline_value.toFixed(1)}</span>
         </div>
       </div>
     </article>
