@@ -79,7 +79,7 @@ Then seed and generate signals from the repo root:
 5. `pip install -r requirements.txt`
 6. `export DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/shyfty`
 7. `alembic upgrade head`
-8. `uvicorn app.main:app --reload --port 8001`
+8. `uvicorn app.main:app --reload --host 0.0.0.0 --port 8001`
 
 ## Web Setup
 
@@ -94,8 +94,20 @@ Optional:
 ## iOS Setup
 
 1. Open [ios/Shyfty/Shyfty.xcodeproj](/Users/jackziegler/Projects/Shyfty/ios/Shyfty/Shyfty.xcodeproj)
-2. Run the `Shyfty` scheme in the iOS simulator
-3. Ensure the backend is available on `http://127.0.0.1:8001/api`
+2. Start the backend with `uvicorn app.main:app --reload --host 0.0.0.0 --port 8001`
+3. Run the `Shyfty` scheme in Xcode
+
+Debug base URL behavior:
+
+- iOS Simulator always uses `http://127.0.0.1:8001/api`
+- Physical iPhone Debug builds use `http://192.168.0.28:8001/api`
+- The physical-device Debug URL is supplied by the `SHYFTY_API_BASE_URL` build setting and injected into `ShyftyAPIBaseURL` in `Info-Debug.plist`
+
+Notes:
+
+- Your Mac and iPhone must be on the same local network for physical-device testing
+- If your Mac’s LAN IP changes, update `SHYFTY_API_BASE_URL` in the Xcode project Debug build settings
+- Debug builds include ATS exceptions for local HTTP access to `127.0.0.1` and `192.168.0.28`
 
 ## Seeding and Signal Generation
 
