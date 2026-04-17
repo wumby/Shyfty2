@@ -68,7 +68,7 @@ const reactionMeta: Array<{ type: ReactionType; label: string }> = [
   { type: 'risky', label: 'Risky' },
 ];
 
-export function SignalCard({ signal }: { signal: Signal }) {
+export function SignalCard({ signal, onOpenDetail }: { signal: Signal; onOpenDetail?: (id: number) => void }) {
   const importance = getImportance(signal);
   const importanceScore = getImportanceScore(signal);
   const summary = formatSignalSummary(signal);
@@ -154,6 +154,15 @@ export function SignalCard({ signal }: { signal: Signal }) {
               </button>
             );
           })}
+          {onOpenDetail != null && (
+            <button
+              type="button"
+              onClick={() => onOpenDetail(signal.id)}
+              className="ml-auto rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-slate-600 transition hover:text-blue-400"
+            >
+              Why →
+            </button>
+          )}
         </div>
       </div>
       <div className="self-center justify-self-end text-right">

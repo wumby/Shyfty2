@@ -39,6 +39,7 @@ export interface Signal {
     baseline_window: string;
     trend_direction: 'up' | 'down' | 'flat';
   };
+  classification_reason?: string;
   reaction_summary: ReactionSummary;
   user_reaction: ReactionType | null;
   created_at: string;
@@ -66,6 +67,40 @@ export interface Team {
 export interface MetricSeriesPoint {
   game_date: string;
   metrics: Record<string, number>;
+}
+
+export interface TeamDetail extends Team {
+  players: Player[];
+  recent_signals: Signal[];
+}
+
+export interface PaginatedSignals {
+  items: Signal[];
+  has_more: boolean;
+  next_cursor: number | null;
+}
+
+export interface BaselineSample {
+  stat_id: number;
+  game_id: number;
+  game_date: string;
+  value: number;
+}
+
+export interface SignalTrace {
+  signal: Signal;
+  rolling_metric: {
+    metric_name: string;
+    rolling_avg: number;
+    rolling_stddev: number;
+    z_score: number;
+  } | null;
+  source_stat: {
+    game_date: string;
+    current_value: number;
+    raw_stats: Record<string, number>;
+  } | null;
+  baseline_samples: BaselineSample[];
 }
 
 export interface SignalFilters {

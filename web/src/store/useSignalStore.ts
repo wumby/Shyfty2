@@ -6,12 +6,17 @@ import type { Player, ReactionType, Signal, SignalFilters, Team } from '../types
 interface SignalStore {
   filters: SignalFilters;
   signals: Signal[];
+  hasMore: boolean;
+  nextCursor: number | null;
+  loadingInitial: boolean;
+  loadingMore: boolean;
   players: Player[];
   teams: Team[];
   loading: boolean;
   error: string | null;
   setFilters: (filters: SignalFilters) => void;
   fetchSignals: () => Promise<void>;
+  loadMore: () => Promise<void>;
   fetchPlayers: () => Promise<void>;
   fetchTeams: () => Promise<void>;
   reactToSignal: (signalId: number, reactionType: ReactionType) => Promise<void>;
@@ -36,20 +41,44 @@ function applyReactionChange(signal: Signal, reactionType: ReactionType) {
 export const useSignalStore = create<SignalStore>((set, get) => ({
   filters: {},
   signals: [],
+  hasMore: false,
+  nextCursor: null,
+  loadingInitial: false,
+  loadingMore: false,
   players: [],
   teams: [],
   loading: false,
   error: null,
+
   setFilters: (filters) => set({ filters }),
+
   fetchSignals: async () => {
-    set({ loading: true, error: null });
+    set({ loadingInitial: true, loading: true, error: null, signals: [], hasMore: false, nextCursor: null });
     try {
-      const signals = await api.getSignals(get().filters);
-      set({ signals, loading: false });
+      const page = await api.getSignals(get().filters);
+      set({ signals: page.items, hasMore: page.has_more, nextCursor: page.next_cursor, loadingInitial: false, loading: false });
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Unknown error', loading: false });
+      set({ error: error instanceof Error ? error.message : 'Unknown error', loadingInitial: false, loading: false });
     }
   },
+
+  loadMore: async () => {
+    const { loadingMore, hasMore, nextCursor, filters, signals } = get();
+    if (loadingMore || !hasMore || nextCursor == null) return;
+    set({ loadingMore: true });
+    try {
+      const page = await api.getSignals(filters, nextCursor);
+      set({
+        signals: [...signals, ...page.items],
+        hasMore: page.has_more,
+        nextCursor: page.next_cursor,
+        loadingMore: false,
+      });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Load more failed.', loadingMore: false });
+    }
+  },
+
   fetchPlayers: async () => {
     set({ loading: true, error: null });
     try {
@@ -59,6 +88,7 @@ export const useSignalStore = create<SignalStore>((set, get) => ({
       set({ error: error instanceof Error ? error.message : 'Unknown error', loading: false });
     }
   },
+
   fetchTeams: async () => {
     set({ loading: true, error: null });
     try {
@@ -68,6 +98,7 @@ export const useSignalStore = create<SignalStore>((set, get) => ({
       set({ error: error instanceof Error ? error.message : 'Unknown error', loading: false });
     }
   },
+
   reactToSignal: async (signalId, reactionType) => {
     const previousSignals = get().signals;
     const target = previousSignals.find((signal) => signal.id === signalId);

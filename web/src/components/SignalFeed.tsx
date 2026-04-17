@@ -1,37 +1,41 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { EmptyState } from './EmptyState';
 import { SignalCard } from './SignalCard';
 import type { Signal } from '../types';
+import { useSignalStore } from '../store/useSignalStore';
 
-export function SignalFeed({ signals }: { signals: Signal[] }) {
-  const [visibleCount, setVisibleCount] = useState(24);
+interface SignalFeedProps {
+  signals: Signal[];
+  onOpenDetail?: (signalId: number) => void;
+  /** When true, wires the sentinel to the global store's loadMore (main feed). */
+  paginated?: boolean;
+}
+
+export function SignalFeed({ signals, onOpenDetail, paginated = false }: SignalFeedProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const loadMore = useSignalStore((state) => state.loadMore);
+  const hasMore = useSignalStore((state) => state.hasMore);
+  const loadingMore = useSignalStore((state) => state.loadingMore);
 
   useEffect(() => {
-    setVisibleCount(24);
-  }, [signals]);
-
-  useEffect(() => {
+    if (!paginated) return undefined;
     const sentinel = sentinelRef.current;
     if (!sentinel) return undefined;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        const entry = entries[0];
-        if (entry?.isIntersecting) {
-          setVisibleCount((count) => Math.min(count + 24, signals.length));
+        if (entries[0]?.isIntersecting && hasMore && !loadingMore) {
+          void loadMore();
         }
       },
-      { root: containerRef.current, rootMargin: '240px 0px' },
+      { root: containerRef.current, rootMargin: '300px 0px' },
     );
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [signals.length]);
-
-  const visibleSignals = useMemo(() => signals.slice(0, visibleCount), [signals, visibleCount]);
+  }, [paginated, hasMore, loadingMore, loadMore]);
 
   if (!signals.length) {
     return (
@@ -44,10 +48,16 @@ export function SignalFeed({ signals }: { signals: Signal[] }) {
   return (
     <div className="h-full overflow-y-auto" ref={containerRef}>
       <div className="overflow-hidden bg-transparent">
-        {visibleSignals.map((signal) => (
-          <SignalCard key={signal.id} signal={signal} />
+        {signals.map((signal) => (
+          <SignalCard key={signal.id} signal={signal} onOpenDetail={onOpenDetail} />
         ))}
-        {visibleCount < signals.length ? <div ref={sentinelRef} className="h-8" /> : null}
+        {paginated && hasMore && (
+          <div ref={sentinelRef} className="flex items-center justify-center py-4">
+            {loadingMore && (
+              <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Loading more…</div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

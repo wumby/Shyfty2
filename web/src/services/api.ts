@@ -1,11 +1,14 @@
 import type {
   MetricSeriesPoint,
+  PaginatedSignals,
   Player,
   PlayerDetail,
   ReactionType,
   Signal,
   SignalFilters,
+  SignalTrace,
   Team,
+  TeamDetail,
   User,
 } from '../types';
 
@@ -41,12 +44,13 @@ interface AuthSession {
 }
 
 export const api = {
-  getSignals(filters: SignalFilters = {}) {
+  getSignals(filters: SignalFilters = {}, beforeId?: number) {
     const query = new URLSearchParams();
     if (filters.league) query.set('league', filters.league);
     if (filters.signal_type) query.set('signal_type', filters.signal_type);
-    query.set('limit', '50');
-    return request<Signal[]>(`/signals?${query.toString()}`);
+    if (beforeId != null) query.set('before_id', String(beforeId));
+    query.set('limit', '24');
+    return request<PaginatedSignals>(`/signals?${query.toString()}`);
   },
   getPlayers() {
     return request<Player[]>('/players');
@@ -62,6 +66,12 @@ export const api = {
   },
   getTeams() {
     return request<Team[]>('/teams');
+  },
+  getTeam(id: string) {
+    return request<TeamDetail>(`/teams/${id}`);
+  },
+  getSignalTrace(id: number) {
+    return request<SignalTrace>(`/debug/signals/${id}`);
   },
   getSession() {
     return request<AuthSession>('/auth/me');
