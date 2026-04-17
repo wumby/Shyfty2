@@ -4,6 +4,7 @@ import { FilterBar } from '../components/FilterBar';
 import { LoadingState } from '../components/LoadingState';
 import { SignalDetailDrawer } from '../components/SignalDetailDrawer';
 import { SignalFeed } from '../components/SignalFeed';
+import { TrendingSection } from '../components/TrendingSection';
 import { useSignalStore } from '../store/useSignalStore';
 
 export function SignalFeedPage() {
@@ -40,12 +41,17 @@ export function SignalFeedPage() {
           </div>
         </div>
 
-        <div className="min-h-0 flex-1">
-          <div className="lg:hidden px-2 pb-3">
-            <FilterBar
-              filters={filters}
-              onChange={(nextFilters) => setFilters(nextFilters)}
-            />
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="px-3 pt-3 sm:px-4">
+            <div className="lg:hidden pb-3">
+              <FilterBar
+                filters={filters}
+                onChange={(nextFilters) => setFilters(nextFilters)}
+              />
+            </div>
+            {!filters.league && !filters.signal_type && (
+              <TrendingSection onOpenDetail={(id) => setDetailSignalId(id)} />
+            )}
           </div>
           {loadingInitial ? (
             <LoadingState />

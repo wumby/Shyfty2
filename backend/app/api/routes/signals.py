@@ -5,10 +5,23 @@ from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_current_user, get_db
 from app.models.user import User
-from app.schemas.signal import PaginatedSignals
-from app.services.signal_service import list_signals
+from app.schemas.signal import PaginatedSignals, SignalRead
+from app.services.signal_service import list_signals, list_trending_signals
 
 router = APIRouter()
+
+
+@router.get("/signals/trending", response_model=list[SignalRead])
+def get_trending_signals(
+    limit: int = 12,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user),
+) -> list[SignalRead]:
+    return list_trending_signals(
+        db=db,
+        limit=limit,
+        current_user_id=current_user.id if current_user is not None else None,
+    )
 
 
 @router.get("/signals", response_model=PaginatedSignals)

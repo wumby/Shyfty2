@@ -103,6 +103,15 @@ export interface SignalTrace {
   baseline_samples: BaselineSample[];
 }
 
+export interface Comment {
+  id: number;
+  signal_id: number;
+  user_id: number;
+  user_email: string;
+  body: string;
+  created_at: string;
+}
+
 export interface SignalFilters {
   league?: string;
   signal_type?: string;

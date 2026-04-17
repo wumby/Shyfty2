@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from app.domain.signals import (
@@ -18,6 +18,7 @@ from app.models.league import League
 from app.models.player import Player
 from app.models.rolling_metric import RollingMetric
 from app.models.signal import Signal
+from app.models.signal_reaction import SignalReaction
 from app.models.team import Team
 from app.schemas.reaction import ReactionSummaryRead
 from app.schemas.signal import PaginatedSignals, SignalRead, SignalSummaryTemplateInputs
@@ -141,3 +142,57 @@ def list_signals(
     next_cursor = items[-1].id if has_more and items else None
 
     return PaginatedSignals(items=items, has_more=has_more, next_cursor=next_cursor)
+
+
+def list_trending_signals(
+    db: Session,
+    limit: int = 12,
+    current_user_id: Optional[int] = None,
+) -> list[SignalRead]:
+    """Return signals ranked by importance + recency + total reaction count."""
+    reaction_count_subq = (
+        select(SignalReaction.signal_id, func.count(SignalReaction.id).label("total_reactions"))
+        .group_by(SignalReaction.signal_id)
+        .subquery()
+    )
+
+    query = (
+        select(Signal, Player.name, Team.name, League.name, Game.game_date, RollingMetric.rolling_stddev)
+        .join(Player, Signal.player_id == Player.id)
+        .join(Team, Signal.team_id == Team.id)
+        .join(League, Signal.league_id == League.id)
+        .join(Game, Signal.game_id == Game.id)
+        .outerjoin(
+            RollingMetric,
+            and_(
+                RollingMetric.player_id == Signal.player_id,
+                RollingMetric.game_id == Signal.game_id,
+                RollingMetric.metric_name == Signal.metric_name,
+            ),
+        )
+        .outerjoin(reaction_count_subq, reaction_count_subq.c.signal_id == Signal.id)
+        .order_by(
+            (func.abs(Signal.z_score) + func.coalesce(reaction_count_subq.c.total_reactions, 0)).desc(),
+            Signal.created_at.desc(),
+        )
+        .limit(limit)
+    )
+
+    rows = db.execute(query).all()
+    signal_ids = [signal.id for signal, *_ in rows]
+    reaction_summaries = get_reaction_summaries(db, signal_ids)
+    user_reactions = get_user_reactions(db, user_id=current_user_id, signal_ids=signal_ids)
+
+    return [
+        build_signal_read(
+            signal,
+            player_name,
+            team_name,
+            league_name,
+            event_date,
+            rolling_stddev,
+            reaction_summary=reaction_summaries.get(signal.id),
+            user_reaction=user_reactions.get(signal.id),
+        )
+        for signal, player_name, team_name, league_name, event_date, rolling_stddev in rows
+    ]

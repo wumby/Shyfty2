@@ -1,4 +1,5 @@
 import type {
+  Comment,
   MetricSeriesPoint,
   PaginatedSignals,
   Player,
@@ -99,5 +100,20 @@ export const api = {
   },
   clearSignalReaction(signalId: number) {
     return request<void>(`/signals/${signalId}/reaction`, { method: 'DELETE' });
+  },
+  getTrendingSignals(limit = 12) {
+    return request<Signal[]>(`/signals/trending?limit=${limit}`);
+  },
+  getComments(signalId: number) {
+    return request<Comment[]>(`/signals/${signalId}/comments`);
+  },
+  postComment(signalId: number, body: string) {
+    return request<Comment>(`/signals/${signalId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ body }),
+    });
+  },
+  deleteComment(commentId: number) {
+    return request<void>(`/comments/${commentId}`, { method: 'DELETE' });
   },
 };
