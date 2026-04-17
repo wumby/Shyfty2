@@ -18,6 +18,6 @@ class PlayerDetail(PlayerRead):
 
 
 class MetricSeriesPoint(BaseModel):
+    game_id: int
     game_date: date
     metrics: dict[str, float]
-

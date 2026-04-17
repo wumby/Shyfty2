@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import DateTime, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -13,6 +14,7 @@ class RollingMetric(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     player_id: Mapped[int] = mapped_column(ForeignKey("players.id"), nullable=False)
     game_id: Mapped[int] = mapped_column(ForeignKey("games.id"), nullable=False)
+    source_stat_id: Mapped[Optional[int]] = mapped_column(ForeignKey("player_game_stats.id"), nullable=True)
     metric_name: Mapped[str] = mapped_column(String(64), nullable=False)
     rolling_avg: Mapped[float] = mapped_column(Float, nullable=False)
     rolling_stddev: Mapped[float] = mapped_column(Float, nullable=False)
@@ -21,3 +23,10 @@ class RollingMetric(Base):
 
     player = relationship("Player", back_populates="rolling_metrics")
     game = relationship("Game", back_populates="rolling_metrics")
+    source_stat = relationship("PlayerGameStat", back_populates="source_rolling_metrics", foreign_keys=[source_stat_id])
+    baseline_samples = relationship(
+        "RollingMetricBaselineSample",
+        back_populates="rolling_metric",
+        order_by="RollingMetricBaselineSample.sample_order",
+    )
+    signals = relationship("Signal", back_populates="rolling_metric")

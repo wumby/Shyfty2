@@ -10,6 +10,7 @@ from app.models.game import Game
 from app.models.player import Player
 from app.models.player_game_stat import PlayerGameStat
 from app.models.rolling_metric import RollingMetric
+from app.models.rolling_metric_baseline_sample import RollingMetricBaselineSample
 from app.models.signal import Signal
 
 
@@ -35,6 +36,7 @@ def _upsert_rolling_metric(
     *,
     player_id: int,
     game_id: int,
+    source_stat_id: int,
     metric_name: str,
     rolling_avg: float,
     rolling_stddev: float,
@@ -54,6 +56,7 @@ def _upsert_rolling_metric(
         rolling_metric = RollingMetric(
             player_id=player_id,
             game_id=game_id,
+            source_stat_id=source_stat_id,
             metric_name=metric_name,
             rolling_avg=rolling_avg,
             rolling_stddev=rolling_stddev,
@@ -62,12 +65,34 @@ def _upsert_rolling_metric(
         )
         db.add(rolling_metric)
     else:
+        rolling_metric.source_stat_id = source_stat_id
         rolling_metric.rolling_avg = rolling_avg
         rolling_metric.rolling_stddev = rolling_stddev
         rolling_metric.z_score = z_score
         rolling_metric.updated_at = generated_at
 
     return rolling_metric, created
+
+
+def _sync_rolling_metric_baseline_samples(
+    db: Session,
+    *,
+    rolling_metric_id: int,
+    baseline_stat_ids: list[int],
+) -> None:
+    db.execute(
+        delete(RollingMetricBaselineSample).where(
+            RollingMetricBaselineSample.rolling_metric_id == rolling_metric_id
+        )
+    )
+    for sample_order, stat_id in enumerate(baseline_stat_ids):
+        db.add(
+            RollingMetricBaselineSample(
+                rolling_metric_id=rolling_metric_id,
+                player_game_stat_id=stat_id,
+                sample_order=sample_order,
+            )
+        )
 
 
 def _delete_stale_rolling_metrics(db: Session, *, player_id: int, valid_contexts: set[tuple[int, str]]) -> int:
@@ -80,6 +105,20 @@ def _delete_stale_rolling_metrics(db: Session, *, player_id: int, valid_contexts
 
     deleted = 0
     for game_id, metric_name in stale_contexts:
+        rolling_metric = db.execute(
+            select(RollingMetric).where(
+                RollingMetric.player_id == player_id,
+                RollingMetric.game_id == game_id,
+                RollingMetric.metric_name == metric_name,
+            )
+        ).scalar_one_or_none()
+        if rolling_metric is None:
+            continue
+        db.execute(
+            delete(RollingMetricBaselineSample).where(
+                RollingMetricBaselineSample.rolling_metric_id == rolling_metric.id
+            )
+        )
         deleted += db.execute(
             delete(RollingMetric).where(
                 RollingMetric.player_id == player_id,
@@ -115,6 +154,8 @@ def _sync_signal_for_context(
     *,
     player: Player,
     game_id: int,
+    rolling_metric_id: int,
+    source_stat_id: int,
     metric_name: str,
     signal_type: Optional[str],
     current_value: float,
@@ -142,7 +183,7 @@ def _sync_signal_for_context(
     if signal_type is None:
         return created, updated, deleted
 
-    explanation = build_explanation(player.name, metric_name, current_value, baseline_value, z_score)
+    explanation = build_explanation(player.name, metric_name, current_value, baseline_value, z_score, signal_type)
     current_signal = next((signal for signal in existing_signals if signal.signal_type == signal_type), None)
 
     if current_signal is None:
@@ -150,6 +191,8 @@ def _sync_signal_for_context(
             Signal(
                 player_id=player.id,
                 game_id=game_id,
+                rolling_metric_id=rolling_metric_id,
+                source_stat_id=source_stat_id,
                 team_id=player.team_id,
                 league_id=player.league_id,
                 signal_type=signal_type,
@@ -166,6 +209,8 @@ def _sync_signal_for_context(
 
     current_signal.team_id = player.team_id
     current_signal.league_id = player.league_id
+    current_signal.rolling_metric_id = rolling_metric_id
+    current_signal.source_stat_id = source_stat_id
     current_signal.current_value = current_value
     current_signal.baseline_value = baseline_value
     current_signal.z_score = z_score
@@ -200,22 +245,37 @@ def generate_signals(db: Session) -> SignalGenerationResult:
                     generated_at = datetime.utcnow()
                     valid_contexts.add((snapshot.game_id, metric_name))
 
-                    _, rolling_created = _upsert_rolling_metric(
+                    rolling_metric, rolling_created = _upsert_rolling_metric(
                         db,
                         player_id=player.id,
                         game_id=snapshot.game_id,
+                        source_stat_id=snapshot.source_stat_id,
                         metric_name=metric_name,
                         rolling_avg=snapshot.baseline_value,
                         rolling_stddev=snapshot.rolling_stddev,
                         z_score=snapshot.z_score,
                         generated_at=generated_at,
                     )
+                    db.flush()
+                    _sync_rolling_metric_baseline_samples(
+                        db,
+                        rolling_metric_id=rolling_metric.id,
+                        baseline_stat_ids=snapshot.baseline_stat_ids,
+                    )
 
-                    signal_type = classify_signal(snapshot.z_score, snapshot.rolling_stddev, metric_name)
+                    signal_type = classify_signal(
+                        snapshot.z_score,
+                        snapshot.rolling_stddev,
+                        metric_name,
+                        snapshot.current_value,
+                        snapshot.baseline_value,
+                    )
                     created, updated, deleted = _sync_signal_for_context(
                         db,
                         player=player,
                         game_id=snapshot.game_id,
+                        rolling_metric_id=rolling_metric.id,
+                        source_stat_id=snapshot.source_stat_id,
                         metric_name=metric_name,
                         signal_type=signal_type,
                         current_value=snapshot.current_value,

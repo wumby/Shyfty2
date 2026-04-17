@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import health, players, signals, teams
+from app.api.routes import debug, health, players, signals, teams
 
 
 def create_app() -> FastAPI:
@@ -19,6 +19,7 @@ def create_app() -> FastAPI:
     app.include_router(signals.router, prefix="/api", tags=["signals"])
     app.include_router(players.router, prefix="/api", tags=["players"])
     app.include_router(teams.router, prefix="/api", tags=["teams"])
+    app.include_router(debug.router, prefix="/api", tags=["debug"])
 
     return app
 

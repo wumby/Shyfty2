@@ -57,6 +57,20 @@ export function formatDelta(signal: Signal): string {
   return `${rounded >= 0 ? '+' : ''}${rounded}%`;
 }
 
+export function getSignalDirection(signal: Signal): 'positive' | 'negative' | 'neutral' {
+  const deltaPercent = getDeltaPercent(signal);
+
+  if (signal.signal_type === 'CONSISTENCY') return 'neutral';
+  if (deltaPercent === null) {
+    const rawDelta = signal.current_value - signal.baseline_value;
+    if (Math.abs(rawDelta) < 0.05) return 'neutral';
+    return rawDelta > 0 ? 'positive' : 'negative';
+  }
+
+  if (Math.abs(deltaPercent) < 1) return 'neutral';
+  return deltaPercent > 0 ? 'positive' : 'negative';
+}
+
 export function formatMovementLabel(signal: Signal): string {
   const metric = getMetricLabel(signal);
   const deltaPercent = getDeltaPercent(signal);
@@ -66,6 +80,21 @@ export function formatMovementLabel(signal: Signal): string {
 
   const direction = deltaPercent >= 0 ? 'above' : 'below';
   return `${Math.abs(Math.round(deltaPercent))}% ${direction} baseline`;
+}
+
+export function formatSignalSummary(signal: Signal): string {
+  const metric = getMetricLabel(signal);
+  const deltaPercent = getDeltaPercent(signal);
+  const window = signal.baseline_window ?? 'recent baseline';
+
+  if (deltaPercent === null) {
+    const rawDelta = signal.current_value - signal.baseline_value;
+    return `${metric} moved ${rawDelta >= 0 ? 'above' : 'below'} ${window}.`;
+  }
+
+  const rounded = Math.abs(Math.round(deltaPercent));
+  const direction = deltaPercent >= 0 ? 'above' : 'below';
+  return `${metric} is ${rounded}% ${direction} ${window}.`;
 }
 
 export function formatEventDate(value: string): string {

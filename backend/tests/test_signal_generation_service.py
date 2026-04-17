@@ -8,10 +8,13 @@ from sqlalchemy.orm import sessionmaker
 
 from app.db.base import Base
 from app.models.player import Player
+from app.models.player_game_stat import PlayerGameStat
 from app.models.rolling_metric import RollingMetric
+from app.models.rolling_metric_baseline_sample import RollingMetricBaselineSample
 from app.models.signal import Signal
 from app.services.seed_service import seed_database
 from app.services.signal_generation_service import SignalGenerationError, generate_signals
+from app.services.signal_service import list_signals
 
 
 class SignalGenerationServiceTests(unittest.TestCase):
@@ -91,6 +94,68 @@ class SignalGenerationServiceTests(unittest.TestCase):
 
         self.assertEqual(signal_count, 0)
         self.assertEqual(rolling_count, 0)
+
+    def test_generated_signal_enrichment_matches_computed_values(self) -> None:
+        seed_database(self.session)
+        generate_signals(self.session)
+
+        signal = list_signals(
+            db=self.session,
+            league=None,
+            team=None,
+            player=None,
+            signal_type=None,
+            limit=1,
+        )[0]
+
+        if signal.baseline_value != 0:
+            expected_movement = ((signal.current_value - signal.baseline_value) / signal.baseline_value) * 100
+            self.assertAlmostEqual(signal.movement_pct or 0.0, expected_movement, places=4)
+        self.assertEqual(signal.summary_template_inputs.movement_pct, signal.movement_pct)
+        self.assertEqual(signal.summary_template_inputs.current_value, signal.current_value)
+        self.assertEqual(signal.summary_template_inputs.baseline_value, signal.baseline_value)
+        self.assertTrue(signal.explanation)
+        self.assertIn("baseline", signal.explanation.lower())
+        self.assertTrue(signal.classification_reason)
+
+    def test_generate_signals_persists_provenance_links(self) -> None:
+        seed_database(self.session)
+        generate_signals(self.session)
+
+        rolling_metric = self.session.execute(
+            select(RollingMetric)
+            .where(RollingMetric.metric_name == "points")
+            .order_by(RollingMetric.id)
+        ).scalars().first()
+        self.assertIsNotNone(rolling_metric)
+        assert rolling_metric is not None
+        self.assertIsNotNone(rolling_metric.source_stat_id)
+
+        source_stat = self.session.execute(
+            select(PlayerGameStat).where(PlayerGameStat.id == rolling_metric.source_stat_id)
+        ).scalar_one()
+        self.assertEqual(source_stat.player_id, rolling_metric.player_id)
+        self.assertEqual(source_stat.game_id, rolling_metric.game_id)
+
+        baseline_samples = self.session.execute(
+            select(RollingMetricBaselineSample)
+            .where(RollingMetricBaselineSample.rolling_metric_id == rolling_metric.id)
+            .order_by(RollingMetricBaselineSample.sample_order)
+        ).scalars().all()
+        self.assertGreaterEqual(len(baseline_samples), 2)
+
+        signal = self.session.execute(
+            select(Signal)
+            .where(
+                Signal.player_id == rolling_metric.player_id,
+                Signal.game_id == rolling_metric.game_id,
+                Signal.metric_name == rolling_metric.metric_name,
+            )
+        ).scalars().first()
+        self.assertIsNotNone(signal)
+        assert signal is not None
+        self.assertEqual(signal.rolling_metric_id, rolling_metric.id)
+        self.assertEqual(signal.source_stat_id, rolling_metric.source_stat_id)
 
 
 if __name__ == "__main__":

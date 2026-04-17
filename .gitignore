@@ -8,4 +8,10 @@ __pycache__
 .idea
 .vscode
 postgres_data
-
+.run/
+*.log
+*.pid
+DerivedData/
+xcuserdata/
+*.xcuserstate
+data/raw/

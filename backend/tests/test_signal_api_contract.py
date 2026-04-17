@@ -6,8 +6,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.db.base import Base
-from app.services.player_service import get_player_signals
+from app.services.player_service import get_player_metric_series, get_player_signals
 from app.services.seed_service import seed_database
+from app.services.signal_inspection_service import inspect_signal
 from app.services.signal_generation_service import generate_signals
 from app.services.signal_service import list_signals
 
@@ -49,12 +50,16 @@ class SignalAPIContractTests(unittest.TestCase):
         self.assertEqual(signal.baseline_window, "last 5 games")
         self.assertTrue(signal.metric_label)
         self.assertIn(signal.trend_direction, {"up", "down", "flat"})
+        self.assertIn(signal.importance_label, {"High", "Medium", "Watch"})
         self.assertEqual(signal.summary_template, "metric_vs_recent_baseline")
         self.assertEqual(signal.summary_template_inputs.baseline_window, signal.baseline_window)
         self.assertEqual(signal.summary_template_inputs.trend_direction, signal.trend_direction)
         self.assertEqual(signal.summary_template_inputs.current_value, signal.current_value)
         self.assertEqual(signal.summary_template_inputs.baseline_value, signal.baseline_value)
         self.assertIsNotNone(signal.event_date)
+        self.assertGreater(signal.game_id, 0)
+        self.assertGreaterEqual(signal.rolling_stddev, 0.0)
+        self.assertTrue(signal.classification_reason)
 
     def test_player_signals_return_same_enriched_shape(self) -> None:
         signals = get_player_signals(self.session, player_id=1)
@@ -65,6 +70,37 @@ class SignalAPIContractTests(unittest.TestCase):
         self.assertLessEqual(signal.importance, 100.0)
         self.assertIn(signal.trend_direction, {"up", "down", "flat"})
         self.assertEqual(signal.summary_template_inputs.movement_pct, signal.movement_pct)
+        self.assertEqual(signal.summary_template_inputs.current_value, signal.current_value)
+
+    def test_player_metric_series_include_game_id_for_signal_correlation(self) -> None:
+        metrics = get_player_metric_series(self.session, player_id=1)
+
+        self.assertTrue(metrics)
+        self.assertGreater(metrics[0].game_id, 0)
+        self.assertTrue(metrics[0].metrics)
+
+    def test_signal_trace_exposes_source_stat_and_baseline_window(self) -> None:
+        signal = list_signals(
+            db=self.session,
+            league=None,
+            team=None,
+            player=None,
+            signal_type=None,
+            limit=1,
+        )[0]
+
+        trace = inspect_signal(self.session, signal.id)
+
+        self.assertIsNotNone(trace)
+        assert trace is not None
+        self.assertEqual(trace.signal.id, signal.id)
+        self.assertIsNotNone(trace.rolling_metric.id)
+        self.assertEqual(trace.source_stat.game_id, signal.game_id)
+        self.assertGreater(trace.source_stat.stat_id, 0)
+        self.assertEqual(trace.source_stat.current_value, signal.current_value)
+        self.assertLessEqual(len(trace.baseline_samples), signal.baseline_window_size - 1)
+        self.assertTrue(trace.baseline_samples)
+        self.assertGreater(trace.baseline_samples[0].stat_id, 0)
 
 
 if __name__ == "__main__":

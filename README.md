@@ -81,6 +81,29 @@ Then seed and generate signals from the repo root:
 7. `alembic upgrade head`
 8. `uvicorn app.main:app --reload --host 0.0.0.0 --port 8001`
 
+## NBA Ingestion Workflow
+
+The preferred local validation path is now NBA-only raw ingestion instead of the hand-seeded demo dataset.
+
+Commands from the repo root:
+
+1. Fetch recent NBA raw payloads
+   `python scripts/fetch_nba_data.py --season 2024-25 --days-back 21 --max-games 20`
+2. Normalize the latest raw snapshot into canonical tables
+   `DATABASE_URL=sqlite:////Users/jackziegler/Projects/Shyfty/shyfty.db python scripts/load_nba_data.py`
+3. Generate signals from the normalized data
+   `DATABASE_URL=sqlite:////Users/jackziegler/Projects/Shyfty/shyfty.db python scripts/run_signal_engine.py`
+
+Inspection helpers:
+
+- `DATABASE_URL=sqlite:////Users/jackziegler/Projects/Shyfty/shyfty.db python scripts/inspect_nba_ingest.py summary`
+- `DATABASE_URL=sqlite:////Users/jackziegler/Projects/Shyfty/shyfty.db python scripts/inspect_nba_ingest.py games --limit 10`
+- `DATABASE_URL=sqlite:////Users/jackziegler/Projects/Shyfty/shyfty.db python scripts/inspect_nba_ingest.py players --limit 20`
+- `DATABASE_URL=sqlite:////Users/jackziegler/Projects/Shyfty/shyfty.db python scripts/inspect_signals.py signal <signal_id>`
+
+Raw payloads are stored under `data/raw/nba/` and the latest fetched snapshot path is recorded in `data/raw/nba/LATEST`.
+Normalized `player_game_stats` rows now retain source IDs and raw snapshot file references so signal traces can be followed from the product layer back to canonical rows and local raw payload files.
+
 ## Web Setup
 
 1. `cd web`
@@ -123,6 +146,8 @@ The seed dataset includes:
 - NBA: Luka Doncic, Nikola Jokic, Stephen Curry
 - NFL: Patrick Mahomes, Josh Allen, Justin Jefferson
 
+Seed data remains available as a fallback demo path, but it is no longer the preferred way to validate the NBA signal pipeline.
+
 The signal engine computes rolling averages, rolling standard deviation, z-scores, and writes signal records using these rules:
 
 - `SPIKE`: `z >= 1.5`
@@ -159,9 +184,9 @@ Real:
 
 Mocked or simplified:
 
-- No external sports data ingestion yet
+- NBA ingestion now loads recent raw payloads from `stats.nba.com` into canonical tables, but NFL remains seeded/demo-only
 - No auth, favorites persistence, or push notifications
-- Limited player pool and no live scheduling service
+- No scheduler or background worker yet; ingestion is manual CLI-driven
 
 ## Next Steps To Productionize
 

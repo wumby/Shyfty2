@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import DateTime, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -15,6 +16,8 @@ class Signal(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     player_id: Mapped[int] = mapped_column(ForeignKey("players.id"), nullable=False)
     game_id: Mapped[int] = mapped_column(ForeignKey("games.id"), nullable=False)
+    rolling_metric_id: Mapped[Optional[int]] = mapped_column(ForeignKey("rolling_metrics.id"), nullable=True)
+    source_stat_id: Mapped[Optional[int]] = mapped_column(ForeignKey("player_game_stats.id"), nullable=True)
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), nullable=False)
     league_id: Mapped[int] = mapped_column(ForeignKey("leagues.id"), nullable=False)
     signal_type: Mapped[str] = mapped_column(String(32), nullable=False)
@@ -28,3 +31,5 @@ class Signal(Base):
     player = relationship("Player", back_populates="signals")
     game = relationship("Game", back_populates="signals")
     league = relationship("League", back_populates="signals")
+    rolling_metric = relationship("RollingMetric", back_populates="signals")
+    source_stat = relationship("PlayerGameStat", back_populates="source_signals", foreign_keys=[source_stat_id])
