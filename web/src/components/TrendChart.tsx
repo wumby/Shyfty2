@@ -19,24 +19,24 @@ export function TrendChart({ data }: TrendChartProps) {
   }
 
   return (
-    <div className="h-72 rounded-3xl border border-border bg-white/[0.03] p-4">
-      <div className="mb-4 text-sm text-muted">Recent {firstMetric.replace('_', ' ')} trend</div>
+    <div className="panel-surface h-72 p-5">
+      <div className="eyebrow">Performance arc</div>
+      <div className="mb-4 mt-2 text-sm text-muted">Recent {firstMetric.replace('_', ' ')} trend</div>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={normalized}>
-          <CartesianGrid stroke="#18304d" strokeDasharray="4 4" />
-          <XAxis dataKey="game_date" stroke="#8aa3c1" />
-          <YAxis stroke="#8aa3c1" />
+          <CartesianGrid stroke="rgba(139, 160, 185, 0.16)" strokeDasharray="4 4" />
+          <XAxis dataKey="game_date" stroke="#8ba0b9" />
+          <YAxis stroke="#8ba0b9" />
           <Tooltip
             contentStyle={{
-              backgroundColor: '#0d1b2f',
-              borderColor: '#18304d',
+              backgroundColor: 'rgba(5, 13, 25, 0.95)',
+              borderColor: 'rgba(166, 194, 225, 0.2)',
               borderRadius: '16px',
             }}
           />
-          <Line dataKey={firstMetric} type="monotone" stroke="#49a6ff" strokeWidth={3} dot={{ r: 4 }} />
+          <Line dataKey={firstMetric} type="monotone" stroke="#f97316" strokeWidth={3} dot={{ r: 4, fill: '#f97316' }} />
         </LineChart>
       </ResponsiveContainer>
     </div>
   );
 }
-

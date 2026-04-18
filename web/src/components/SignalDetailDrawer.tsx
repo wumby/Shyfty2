@@ -44,11 +44,11 @@ function buildWhatChanged(trace: SignalTrace): string | null {
 }
 
 const signalTypeColor: Record<string, string> = {
-  SPIKE: 'text-green-400',
-  DROP: 'text-red-400',
-  SHIFT: 'text-amber-400',
-  CONSISTENCY: 'text-blue-400',
-  OUTLIER: 'text-purple-400',
+  SPIKE: 'text-emerald-300',
+  DROP: 'text-rose-300',
+  SHIFT: 'text-amber-300',
+  CONSISTENCY: 'text-sky-300',
+  OUTLIER: 'text-fuchsia-300',
 };
 
 export function SignalDetailDrawer({ signalId, onClose }: Props) {
@@ -81,139 +81,132 @@ export function SignalDetailDrawer({ signalId, onClose }: Props) {
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
+      <div className="fixed inset-0 z-40 bg-black/45 backdrop-blur-[6px]" onClick={onClose} />
 
       <div
         ref={drawerRef}
-        className="fixed right-0 top-0 z-50 flex h-full w-full max-w-[440px] flex-col border-l border-slate-700/50 bg-[#0F172A] shadow-2xl"
+        className="fixed right-0 top-0 z-50 flex h-full w-full max-w-[460px] flex-col border-l border-borderStrong bg-[#07111f]/95 shadow-2xl backdrop-blur-2xl"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
-          <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500">Signal Analysis</div>
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <div className="eyebrow">Signal Analysis</div>
           <button
             type="button"
             onClick={onClose}
-            className="text-xs text-slate-500 transition hover:text-slate-200"
+            className="text-xs text-muted transition hover:text-ink"
           >
             Close ✕
           </button>
         </div>
 
-        {/* Body */}
         <div className="flex-1 overflow-y-auto px-5 py-5">
           {loading && (
             <div className="animate-pulse space-y-4">
-              <div className="h-6 w-48 rounded bg-slate-800" />
-              <div className="h-4 w-full rounded bg-slate-800/60" />
-              <div className="h-4 w-3/4 rounded bg-slate-800/60" />
-              <div className="mt-6 h-20 w-full rounded bg-slate-800/40" />
-              <div className="h-4 w-32 rounded bg-slate-800" />
-              <div className="h-32 w-full rounded bg-slate-800/40" />
+              <div className="h-6 w-48 rounded bg-white/[0.07]" />
+              <div className="h-4 w-full rounded bg-white/[0.04]" />
+              <div className="h-4 w-3/4 rounded bg-white/[0.04]" />
+              <div className="mt-6 h-20 w-full rounded bg-white/[0.04]" />
+              <div className="h-4 w-32 rounded bg-white/[0.07]" />
+              <div className="h-32 w-full rounded bg-white/[0.04]" />
             </div>
           )}
 
           {error && (
-            <div className="rounded-xl border border-red-900/40 bg-red-950/30 px-4 py-3 text-sm text-red-400">
+            <div className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
               {error}
             </div>
           )}
 
           {trace && signal && (
             <div className="space-y-6">
-              {/* Signal identity */}
               <div>
                 <div className={`text-xs font-semibold uppercase tracking-[0.2em] ${signalTypeColor[signal.signal_type] ?? 'text-slate-400'}`}>
                   {formatSignalLabel(signal.signal_type as Parameters<typeof formatSignalLabel>[0])} · {signal.league_name}
                 </div>
-                <h3 className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-slate-100">{signal.player_name}</h3>
-                <p className="mt-0.5 text-sm text-slate-400">
+                <h3 className="mt-1 text-3xl font-semibold text-ink">{signal.player_name}</h3>
+                <p className="mt-0.5 text-sm text-muted">
                   {signal.team_name} · {getMetricLabel(signal)}
                 </p>
                 {signal.event_date && (
-                  <p className="mt-0.5 text-xs text-slate-600">{formatEventDate(signal.event_date)}</p>
+                  <p className="mt-0.5 text-xs text-muted/70">{formatEventDate(signal.event_date)}</p>
                 )}
               </div>
 
-              {/* Key numbers hero */}
-              <div className="grid grid-cols-3 gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-4">
+              <div className="grid grid-cols-3 gap-3 rounded-[26px] border border-border bg-white/[0.03] px-4 py-4">
                 <div className="text-center">
-                  <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">This Game</div>
+                  <div className="text-[10px] uppercase tracking-[0.14em] text-muted">This Game</div>
                   <div className={`mt-1 text-2xl font-bold tabular-nums ${
-                    signal.trend_direction === 'up' ? 'text-green-400' :
-                    signal.trend_direction === 'down' ? 'text-red-400' : 'text-slate-100'
+                    signal.trend_direction === 'up' ? 'text-success' :
+                    signal.trend_direction === 'down' ? 'text-danger' : 'text-ink'
                   }`}>
                     {signal.current_value.toFixed(1)}
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Baseline</div>
-                  <div className="mt-1 text-2xl font-bold tabular-nums text-slate-400">
+                  <div className="text-[10px] uppercase tracking-[0.14em] text-muted">Baseline</div>
+                  <div className="mt-1 text-2xl font-bold tabular-nums text-muted">
                     {signal.baseline_value.toFixed(1)}
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Z-Score</div>
+                  <div className="text-[10px] uppercase tracking-[0.14em] text-muted">Z-Score</div>
                   <div className={`mt-1 text-2xl font-bold tabular-nums ${
-                    Math.abs(signal.z_score) >= 2.5 ? 'text-purple-400' :
-                    Math.abs(signal.z_score) >= 1.5 ? 'text-amber-400' : 'text-slate-300'
+                    Math.abs(signal.z_score) >= 2.5 ? 'text-fuchsia-300' :
+                    Math.abs(signal.z_score) >= 1.5 ? 'text-warning' : 'text-ink'
                   }`}>
                     {signal.z_score > 0 ? '+' : ''}{signal.z_score.toFixed(2)}
                   </div>
                 </div>
               </div>
 
-              {/* What changed - human-readable insight */}
               {whatChanged && (
                 <div>
-                  <div className="mb-2 text-[11px] uppercase tracking-[0.2em] text-slate-500">What This Means</div>
-                  <div className="rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
-                    <p className="text-sm leading-relaxed text-slate-300">{whatChanged}</p>
+                  <div className="eyebrow mb-2">What This Means</div>
+                  <div className="rounded-[22px] border border-border bg-white/[0.03] px-4 py-3">
+                    <p className="text-sm leading-relaxed text-[#d9e3f1]">{whatChanged}</p>
                   </div>
                 </div>
               )}
 
-              {/* Trigger details */}
               {trace.rolling_metric && (
                 <div>
-                  <div className="mb-2 text-[11px] uppercase tracking-[0.2em] text-slate-500">Why It Triggered</div>
-                  <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
-                    <div className="mb-3 text-[11px] uppercase tracking-[0.14em] text-slate-500">{signal.classification_reason}</div>
+                  <div className="eyebrow mb-2">Why It Triggered</div>
+                  <div className="rounded-[22px] border border-border bg-white/[0.03] px-4 py-3">
+                    <div className="mb-3 text-[11px] uppercase tracking-[0.14em] text-muted">{signal.classification_reason}</div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <div className="text-xs text-slate-500">Rolling Avg</div>
-                        <div className="mt-0.5 font-mono text-base font-semibold text-slate-100">
+                        <div className="text-xs text-muted">Rolling Avg</div>
+                        <div className="mt-0.5 font-mono text-base font-semibold text-ink">
                           {trace.rolling_metric.rolling_avg.toFixed(1)}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-slate-500">Std Dev (σ)</div>
-                        <div className="mt-0.5 font-mono text-base font-semibold text-slate-100">
+                        <div className="text-xs text-muted">Std Dev (σ)</div>
+                        <div className="mt-0.5 font-mono text-base font-semibold text-ink">
                           {trace.rolling_metric.rolling_stddev.toFixed(2)}
                         </div>
                       </div>
                     </div>
-                    <div className="mt-3 border-t border-slate-800 pt-3 text-xs text-slate-500">
+                    <div className="mt-3 border-t border-border pt-3 text-xs text-muted">
                       {signal.baseline_window}
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Baseline samples */}
               {trace.baseline_samples.length > 0 && (
                 <div>
-                  <div className="mb-2 text-[11px] uppercase tracking-[0.2em] text-slate-500">
+                  <div className="eyebrow mb-2">
                     Recent History — {signal.baseline_window}
                   </div>
-                  <div className="overflow-hidden rounded-xl border border-slate-800">
+                  <div className="overflow-hidden rounded-[22px] border border-border">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-slate-800 bg-slate-900/60">
-                          <th className="px-3 py-2 text-left text-[10px] uppercase tracking-[0.16em] text-slate-500">Date</th>
-                          <th className="px-3 py-2 text-right text-[10px] uppercase tracking-[0.16em] text-slate-500">
+                        <tr className="border-b border-border bg-white/[0.03]">
+                          <th className="px-3 py-2 text-left text-[10px] uppercase tracking-[0.16em] text-muted">Date</th>
+                          <th className="px-3 py-2 text-right text-[10px] uppercase tracking-[0.16em] text-muted">
                             {getMetricLabel(signal)}
                           </th>
-                          <th className="px-3 py-2 text-right text-[10px] uppercase tracking-[0.16em] text-slate-500">vs avg</th>
+                          <th className="px-3 py-2 text-right text-[10px] uppercase tracking-[0.16em] text-muted">vs avg</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -222,13 +215,13 @@ export function SignalDetailDrawer({ signalId, onClose }: Props) {
                           return (
                             <tr
                               key={sample.stat_id}
-                              className={`border-b border-slate-800/50 ${i % 2 === 0 ? 'bg-transparent' : 'bg-slate-900/30'}`}
+                              className={`border-b border-border/70 ${i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
                             >
-                              <td className="px-3 py-2 text-slate-400">{formatEventDate(sample.game_date)}</td>
-                              <td className="px-3 py-2 text-right font-mono font-medium text-slate-200">
+                              <td className="px-3 py-2 text-muted">{formatEventDate(sample.game_date)}</td>
+                              <td className="px-3 py-2 text-right font-mono font-medium text-[#d9e3f1]">
                                 {sample.value.toFixed(1)}
                               </td>
-                              <td className={`px-3 py-2 text-right font-mono text-xs ${diff > 0 ? 'text-green-500/70' : diff < 0 ? 'text-red-500/70' : 'text-slate-600'}`}>
+                              <td className={`px-3 py-2 text-right font-mono text-xs ${diff > 0 ? 'text-success/80' : diff < 0 ? 'text-danger/80' : 'text-muted/80'}`}>
                                 {diff > 0 ? '+' : ''}{diff.toFixed(1)}
                               </td>
                             </tr>
@@ -237,24 +230,23 @@ export function SignalDetailDrawer({ signalId, onClose }: Props) {
                       </tbody>
                     </table>
                   </div>
-                  <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+                  <div className="mt-2 flex items-center justify-between text-[11px] text-muted">
                     <span>Baseline avg over this window</span>
-                    <span className="font-mono font-medium text-slate-300">{signal.baseline_value.toFixed(1)}</span>
+                    <span className="font-mono font-medium text-ink">{signal.baseline_value.toFixed(1)}</span>
                   </div>
                 </div>
               )}
 
-              {/* This game full box score */}
               {trace.source_stat && (
                 <div>
-                  <div className="mb-2 text-[11px] uppercase tracking-[0.2em] text-slate-500">Full Game Stats</div>
-                  <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
-                    <div className="mb-3 text-xs text-slate-500">{formatEventDate(trace.source_stat.game_date)}</div>
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                      <span className="text-sm font-medium text-slate-300">{getMetricLabel(signal)}</span>
+                  <div className="eyebrow mb-2">Full Game Stats</div>
+                  <div className="rounded-[22px] border border-border bg-white/[0.03] px-4 py-3">
+                    <div className="mb-3 text-xs text-muted">{formatEventDate(trace.source_stat.game_date)}</div>
+                    <div className="flex items-center justify-between border-b border-border pb-3">
+                      <span className="text-sm font-medium text-[#d9e3f1]">{getMetricLabel(signal)}</span>
                       <span className={`font-mono text-xl font-bold ${
-                        signal.trend_direction === 'up' ? 'text-green-400' :
-                        signal.trend_direction === 'down' ? 'text-red-400' : 'text-slate-100'
+                        signal.trend_direction === 'up' ? 'text-success' :
+                        signal.trend_direction === 'down' ? 'text-danger' : 'text-ink'
                       }`}>
                         {trace.source_stat.current_value.toFixed(1)}
                       </span>
@@ -266,10 +258,10 @@ export function SignalDetailDrawer({ signalId, onClose }: Props) {
                           .slice(0, 9)
                           .map(([key, val]) => (
                             <div key={key} className="text-center">
-                              <div className="text-[10px] uppercase tracking-[0.1em] text-slate-600">
+                              <div className="text-[10px] uppercase tracking-[0.1em] text-muted/80">
                                 {key.replace(/_/g, ' ')}
                               </div>
-                              <div className="mt-0.5 font-mono text-sm font-medium text-slate-400">
+                              <div className="mt-0.5 font-mono text-sm font-medium text-muted">
                                 {typeof val === 'number' ? val.toFixed(1) : val}
                               </div>
                             </div>

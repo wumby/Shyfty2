@@ -18,11 +18,11 @@ import { useSignalStore } from '../store/useSignalStore';
 import { CommentsPanel } from './CommentsPanel';
 
 const toneMap: Record<Signal['signal_type'], string> = {
-  SPIKE: 'bg-green-950/60 text-green-400 border border-green-800/50',
-  DROP: 'bg-red-950/60 text-red-400 border border-red-800/50',
-  SHIFT: 'bg-amber-950/60 text-amber-400 border border-amber-800/50',
-  CONSISTENCY: 'bg-blue-950/60 text-blue-400 border border-blue-800/50',
-  OUTLIER: 'bg-purple-950/60 text-purple-400 border border-purple-800/50',
+  SPIKE: 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-300',
+  DROP: 'border border-rose-500/20 bg-rose-500/10 text-rose-300',
+  SHIFT: 'border border-amber-500/20 bg-amber-500/10 text-amber-300',
+  CONSISTENCY: 'border border-sky-500/20 bg-sky-500/10 text-sky-300',
+  OUTLIER: 'border border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-300',
 };
 
 const directionTone: Record<'positive' | 'negative' | 'neutral', {
@@ -34,35 +34,35 @@ const directionTone: Record<'positive' | 'negative' | 'neutral', {
   context: string;
 }> = {
   positive: {
-    rowGlow: 'hover:bg-slate-800/60',
-    rail: 'bg-green-500',
-    summary: 'text-slate-100',
-    delta: 'text-green-400',
-    meta: 'text-slate-400',
-    context: 'text-slate-500',
+    rowGlow: 'hover:bg-white/[0.035]',
+    rail: 'bg-success',
+    summary: 'text-ink',
+    delta: 'text-success',
+    meta: 'text-muted',
+    context: 'text-muted/80',
   },
   negative: {
-    rowGlow: 'hover:bg-slate-800/60',
-    rail: 'bg-red-500',
-    summary: 'text-slate-100',
-    delta: 'text-red-400',
-    meta: 'text-slate-400',
-    context: 'text-slate-500',
+    rowGlow: 'hover:bg-white/[0.035]',
+    rail: 'bg-danger',
+    summary: 'text-ink',
+    delta: 'text-danger',
+    meta: 'text-muted',
+    context: 'text-muted/80',
   },
   neutral: {
-    rowGlow: 'hover:bg-slate-800/60',
-    rail: 'bg-slate-500',
-    summary: 'text-slate-100',
-    delta: 'text-slate-300',
-    meta: 'text-slate-400',
-    context: 'text-slate-500',
+    rowGlow: 'hover:bg-white/[0.035]',
+    rail: 'bg-slate-400',
+    summary: 'text-ink',
+    delta: 'text-ink',
+    meta: 'text-muted',
+    context: 'text-muted/80',
   },
 };
 
 const importanceBadgeTone: Record<'High' | 'Medium' | 'Watch', string> = {
-  High: 'bg-blue-950/60 text-blue-400 border border-blue-800/50',
-  Medium: 'bg-slate-800/60 text-slate-400 border border-slate-700/50',
-  Watch: 'bg-slate-900/60 text-slate-500 border border-slate-700/30',
+  High: 'border border-accent/30 bg-accentSoft text-[#ffd8bd]',
+  Medium: 'border border-border bg-white/[0.04] text-muted',
+  Watch: 'border border-border/70 bg-transparent text-muted/70',
 };
 
 const reactionMeta: Array<{ type: ReactionType; label: string }> = [
@@ -96,7 +96,7 @@ export function SignalCard({ signal, onOpenDetail }: { signal: Signal; onOpenDet
 
   return (
     <article
-      className={`group relative grid grid-cols-[minmax(0,1fr),112px] gap-3 border-b border-slate-800 bg-transparent px-3 py-3 transition duration-150 sm:grid-cols-[minmax(0,1.75fr),132px] sm:px-4 sm:py-3 ${directionStyles.rowGlow}`}
+      className={`group relative grid grid-cols-[minmax(0,1fr),112px] gap-3 border-b border-border bg-transparent px-4 py-4 transition duration-150 sm:grid-cols-[minmax(0,1.75fr),132px] ${directionStyles.rowGlow}`}
     >
       <div className={`absolute inset-y-2.5 left-0 w-[3px] rounded-full ${directionStyles.rail} ${importance === 'Watch' ? 'opacity-35' : 'opacity-75'}`} />
       <div className="min-w-0 pl-2">
@@ -109,27 +109,27 @@ export function SignalCard({ signal, onOpenDetail }: { signal: Signal; onOpenDet
           </span>
         </div>
         <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-          <h3 className="text-[17px] font-semibold tracking-[-0.03em] text-slate-100">{signal.player_name}</h3>
-          <span className="text-xs uppercase tracking-[0.16em] text-slate-500">{getMetricLabel(signal)}</span>
+          <h3 className="text-[24px] font-semibold text-ink">{signal.player_name}</h3>
+          <span className="text-xs uppercase tracking-[0.18em] text-muted">{getMetricLabel(signal)}</span>
         </div>
         <p className={`mt-1 text-[14px] font-medium leading-5 ${directionStyles.summary}`}>{summary}</p>
         <div className={`mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] ${directionStyles.meta}`}>
           <span>{signal.team_name}</span>
-          <span className="text-slate-700">•</span>
+          <span className="text-white/10">•</span>
           <span>{signal.league_name}</span>
           {signal.event_date ? (
             <>
-              <span className="text-slate-700">•</span>
+              <span className="text-white/10">•</span>
               <span>{formatEventDate(signal.event_date)}</span>
             </>
           ) : null}
-          <span className="text-slate-700">•</span>
+          <span className="text-white/10">•</span>
           <span>Z {signal.z_score.toFixed(2)}</span>
-          <span className="text-slate-700">•</span>
+          <span className="text-white/10">•</span>
           <span>{formatRelativeTime(signal.created_at)}</span>
           {importance === 'High' ? (
             <>
-              <span className="text-slate-700">•</span>
+              <span className="text-white/10">•</span>
               <span>{importanceScore.toFixed(0)}</span>
             </>
           ) : null}
@@ -147,11 +147,11 @@ export function SignalCard({ signal, onOpenDetail }: { signal: Signal; onOpenDet
                 className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.14em] transition ${
                   active
                     ? type === 'strong'
-                      ? 'bg-transparent text-green-400'
+                      ? 'bg-transparent text-success'
                       : type === 'risky'
-                        ? 'bg-transparent text-amber-400'
-                        : 'bg-transparent text-blue-400'
-                    : 'bg-transparent text-slate-600 hover:text-slate-400'
+                        ? 'bg-transparent text-warning'
+                        : 'bg-transparent text-[#ffd8bd]'
+                    : 'bg-transparent text-muted/70 hover:text-ink'
                 }`}
               >
                 {label} {count > 0 ? count : ''}
@@ -161,7 +161,7 @@ export function SignalCard({ signal, onOpenDetail }: { signal: Signal; onOpenDet
           <button
             type="button"
             onClick={() => setShowComments((v) => !v)}
-            className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.14em] transition ${showComments ? 'text-slate-300' : 'text-slate-600 hover:text-slate-400'}`}
+            className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.14em] transition ${showComments ? 'text-ink' : 'text-muted/70 hover:text-ink'}`}
           >
             {showComments ? 'Hide' : 'Comments'}
           </button>
@@ -169,14 +169,14 @@ export function SignalCard({ signal, onOpenDetail }: { signal: Signal; onOpenDet
             <button
               type="button"
               onClick={() => onOpenDetail(signal.id)}
-              className="ml-auto rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-slate-600 transition hover:text-blue-400"
+              className="ml-auto rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-muted/80 transition hover:text-[#ffd8bd]"
             >
               Why →
             </button>
           )}
         </div>
         {showComments && (
-          <div className="mt-2 border-t border-slate-800/60 pt-2">
+          <div className="mt-2 border-t border-border pt-2">
             <CommentsPanel signalId={signal.id} />
           </div>
         )}
@@ -184,9 +184,9 @@ export function SignalCard({ signal, onOpenDetail }: { signal: Signal; onOpenDet
       <div className="self-center justify-self-end text-right">
         <div className={`text-[25px] font-semibold tracking-tight tabular-nums ${directionStyles.delta}`}>{formatDelta(signal)}</div>
         <div className="mt-0.5 text-[11px]">
-          <span className="font-medium text-slate-100">{signal.current_value.toFixed(1)}</span>
-          <span className="mx-1 text-slate-700">/</span>
-          <span className="text-slate-500">{signal.baseline_value.toFixed(1)}</span>
+          <span className="font-medium text-ink">{signal.current_value.toFixed(1)}</span>
+          <span className="mx-1 text-white/10">/</span>
+          <span className="text-muted">{signal.baseline_value.toFixed(1)}</span>
         </div>
       </div>
     </article>

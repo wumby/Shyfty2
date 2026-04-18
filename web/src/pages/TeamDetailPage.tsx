@@ -33,21 +33,19 @@ export function TeamDetailPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="rounded-2xl border border-border bg-white/[0.03] p-5">
-        <div className="text-xs uppercase tracking-[0.25em] text-accent">{team.league_name}</div>
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <h2 className="text-3xl font-semibold">{team.name}</h2>
-          <div className="rounded-xl border border-border px-4 py-2 text-sm text-muted">
+      <div className="panel-surface hero-grid p-6">
+        <div className="eyebrow text-[#ffd8bd]">{team.league_name}</div>
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <h2 className="text-4xl font-semibold text-ink">{team.name}</h2>
+          <div className="rounded-[22px] border border-border bg-white/[0.04] px-4 py-2 text-sm text-muted">
             {team.player_count} tracked {team.player_count === 1 ? 'player' : 'players'}
           </div>
         </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[240px,minmax(0,1fr)]">
-        {/* Roster */}
-        <div className="rounded-2xl border border-border bg-white/[0.03] p-4">
-          <div className="mb-3 text-[11px] uppercase tracking-[0.24em] text-slate-500">Roster</div>
+        <div className="panel-surface p-4">
+          <div className="eyebrow mb-3">Roster</div>
           {team.players.length === 0 ? (
             <p className="text-sm text-muted">No players tracked.</p>
           ) : (
@@ -56,20 +54,19 @@ export function TeamDetailPage() {
                 <Link
                   key={player.id}
                   to={`/players/${player.id}`}
-                  className="flex items-center justify-between rounded-xl px-2.5 py-2 text-sm transition hover:bg-slate-800/60"
+                  className="flex items-center justify-between rounded-[18px] px-3 py-2.5 text-sm transition hover:bg-white/[0.04]"
                 >
-                  <span className="font-medium text-slate-100">{player.name}</span>
-                  <span className="text-xs text-slate-500">{player.position}</span>
+                  <span className="font-medium text-ink">{player.name}</span>
+                  <span className="text-xs text-muted">{player.position}</span>
                 </Link>
               ))}
             </div>
           )}
         </div>
 
-        {/* Recent signals */}
-        <div className="rounded-2xl border border-border bg-white/[0.03] overflow-hidden">
-          <div className="border-b border-slate-800 px-4 py-2.5">
-            <div className="text-[11px] uppercase tracking-[0.24em] text-slate-500">
+        <div className="overflow-hidden">
+          <div className="mb-3 px-1">
+            <div className="eyebrow">
               Recent Signals · {team.recent_signals.length}
             </div>
           </div>

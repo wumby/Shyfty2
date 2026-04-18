@@ -30,14 +30,20 @@ export function SignalFeedPage() {
         </div>
       </aside>
 
-      <div className="flex min-h-0 flex-col overflow-hidden rounded-[18px] border border-slate-800 bg-slate-900/30">
-        <div className="border-b border-slate-800 px-3 py-2 sm:px-4">
-          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] uppercase tracking-[0.2em] text-slate-500">
+      <div className="flex min-h-0 flex-col overflow-hidden rounded-[28px] border border-border bg-transparent">
+        <div className="hero-grid rounded-[28px] border border-border bg-white/[0.03] px-4 py-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="eyebrow">Signal Feed</div>
+              <h1 className="mt-2 text-4xl font-semibold text-ink">Read the board, not just the box score.</h1>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] uppercase tracking-[0.2em] text-muted">
             <span>{leagueLabel}</span>
-            <span className="text-slate-700">/</span>
+            <span className="text-white/10">/</span>
             <span>{typeLabel}</span>
-            <span className="text-slate-700">/</span>
+            <span className="text-white/10">/</span>
             <span>{countLabel}</span>
+            </div>
           </div>
         </div>
 

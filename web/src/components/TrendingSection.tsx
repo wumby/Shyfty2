@@ -35,11 +35,11 @@ export function TrendingSection({ onOpenDetail }: Props) {
 
   if (loading) {
     return (
-      <div className="mb-4 space-y-1">
-        <div className="px-1 pb-1 text-[10px] uppercase tracking-[0.24em] text-slate-600">Trending</div>
+      <div className="panel-surface mb-4 space-y-3 px-4 py-4">
+        <div className="eyebrow">Trending</div>
         <div className="flex gap-2 overflow-x-auto pb-1">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-[72px] w-48 flex-none animate-pulse rounded-xl bg-slate-800/60" />
+            <div key={i} className="h-[92px] w-52 flex-none animate-pulse rounded-[22px] bg-white/[0.04]" />
           ))}
         </div>
       </div>
@@ -49,8 +49,14 @@ export function TrendingSection({ onOpenDetail }: Props) {
   if (signals.length === 0) return null;
 
   return (
-    <div className="mb-3">
-      <div className="mb-2 px-1 text-[10px] uppercase tracking-[0.24em] text-slate-600">Trending Now</div>
+    <div className="panel-surface mb-3 px-4 py-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <div className="eyebrow">Trending Now</div>
+          <div className="mt-1 text-sm text-muted">The strongest short-term movement across the live board.</div>
+        </div>
+        <div className="hidden text-[11px] uppercase tracking-[0.24em] text-[#ffd8bd] sm:block">Live movers</div>
+      </div>
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         {signals.map((signal) => {
           const direction = getSignalDirection(signal);
@@ -62,22 +68,22 @@ export function TrendingSection({ onOpenDetail }: Props) {
               key={signal.id}
               type="button"
               onClick={() => onOpenDetail(signal.id)}
-              className="group flex w-44 flex-none flex-col justify-between rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2.5 text-left transition hover:border-slate-700 hover:bg-slate-800/60"
+              className="group flex w-52 flex-none flex-col justify-between rounded-[24px] border border-border bg-white/[0.03] px-4 py-3.5 text-left transition hover:-translate-y-0.5 hover:border-borderStrong hover:bg-white/[0.05]"
             >
               <div className="flex items-center justify-between">
                 <span className={`text-[10px] font-semibold uppercase tracking-[0.14em] ${toneClass}`}>
                   {formatSignalLabel(signal.signal_type)}
                 </span>
                 {importance === 'High' && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                  <span className="accent-dot h-1.5 w-1.5" />
                 )}
               </div>
               <div className="mt-1.5">
-                <div className="truncate text-[13px] font-semibold text-slate-100">{signal.player_name}</div>
-                <div className="mt-0.5 text-[11px] text-slate-500">{signal.metric_label ?? signal.metric_name.replace(/_/g, ' ')}</div>
+                <div className="truncate text-[18px] font-semibold text-ink">{signal.player_name}</div>
+                <div className="mt-0.5 text-[11px] uppercase tracking-[0.16em] text-muted">{signal.metric_label ?? signal.metric_name.replace(/_/g, ' ')}</div>
               </div>
-              <div className={`mt-1.5 text-[18px] font-semibold tabular-nums leading-none ${
-                direction === 'positive' ? 'text-green-400' : direction === 'negative' ? 'text-red-400' : 'text-slate-300'
+              <div className={`mt-3 text-[24px] font-semibold tabular-nums leading-none ${
+                direction === 'positive' ? 'text-success' : direction === 'negative' ? 'text-danger' : 'text-ink'
               }`}>
                 {formatDelta(signal)}
               </div>

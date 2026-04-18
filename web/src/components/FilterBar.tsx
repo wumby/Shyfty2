@@ -19,46 +19,46 @@ const typeTone: Record<string, string> = {
 
 export function FilterBar({ filters, onChange }: FilterBarProps) {
   return (
-    <div className="px-2 py-1">
+    <div className="panel-surface px-4 py-4">
       <div className="space-y-4">
         <div>
-          <div className="mb-1.5 text-[11px] uppercase tracking-[0.24em] text-slate-500">League</div>
+          <div className="eyebrow mb-2">League</div>
           <div className="flex flex-col gap-1">
             {leagues.map((league) => (
               <button
                 key={league}
                 type="button"
-                className={`flex items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.16em] transition ${
+                className={`flex items-center justify-between rounded-[18px] border px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.18em] transition ${
                   (filters.league ?? 'ALL') === league
-                    ? 'bg-blue-900/40 text-blue-300'
-                    : 'text-slate-500 hover:bg-slate-800 hover:text-slate-200'
+                    ? 'border-accent/40 bg-accentSoft text-[#ffd8bd]'
+                    : 'border-transparent text-muted hover:border-border hover:bg-white/[0.03] hover:text-ink'
                 }`}
                 onClick={() => onChange({ ...filters, league: league === 'ALL' ? undefined : league })}
               >
                 <span>{league}</span>
-                {(filters.league ?? 'ALL') === league ? <span className="h-1.5 w-1.5 rounded-full bg-blue-400" /> : null}
+                {(filters.league ?? 'ALL') === league ? <span className="accent-dot h-1.5 w-1.5" /> : null}
               </button>
             ))}
           </div>
         </div>
         <div>
-          <div className="mb-1.5 text-[11px] uppercase tracking-[0.24em] text-slate-500">Signal Type</div>
+          <div className="eyebrow mb-2">Signal Type</div>
           <div className="flex flex-col gap-1">
             {types.map((signalType) => (
               <button
                 key={signalType}
                 type="button"
-                className={`flex items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-[11px] font-semibold uppercase tracking-[0.16em] transition ${
+                className={`flex items-center justify-between rounded-[18px] border px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.18em] transition ${
                   (filters.signal_type ?? 'ALL') === signalType
-                    ? 'bg-blue-900/40 text-blue-300'
-                    : 'text-slate-500 hover:bg-slate-800 hover:text-slate-200'
+                    ? 'border-accent/40 bg-accentSoft text-[#ffd8bd]'
+                    : 'border-transparent text-muted hover:border-border hover:bg-white/[0.03] hover:text-ink'
                 }`}
                 onClick={() =>
                   onChange({ ...filters, signal_type: signalType === 'ALL' ? undefined : signalType })
                 }
               >
-                <span className={(filters.signal_type ?? 'ALL') === signalType ? 'text-blue-300' : typeTone[signalType]}>{signalType}</span>
-                {(filters.signal_type ?? 'ALL') === signalType ? <span className="h-1.5 w-1.5 rounded-full bg-blue-400" /> : null}
+                <span className={(filters.signal_type ?? 'ALL') === signalType ? 'text-[#ffd8bd]' : typeTone[signalType]}>{signalType}</span>
+                {(filters.signal_type ?? 'ALL') === signalType ? <span className="accent-dot h-1.5 w-1.5" /> : null}
               </button>
             ))}
           </div>

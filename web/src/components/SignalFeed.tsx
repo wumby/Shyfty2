@@ -50,14 +50,14 @@ export function SignalFeed({ signals, onOpenDetail, paginated = false }: SignalF
 
   return (
     <div className="h-full overflow-y-auto" ref={containerRef}>
-      <div className="overflow-hidden bg-transparent">
+      <div className="panel-surface overflow-hidden bg-transparent">
         {signals.map((signal) => (
           <SignalCard key={signal.id} signal={signal} onOpenDetail={onOpenDetail} />
         ))}
         {paginated && hasMore && (
           <div ref={sentinelRef} className="flex items-center justify-center py-4">
             {loadingMore && (
-              <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Loading more…</div>
+              <div className="text-[11px] uppercase tracking-[0.2em] text-muted">Loading more…</div>
             )}
           </div>
         )}

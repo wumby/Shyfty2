@@ -47,8 +47,12 @@ export function PlayerDetailPage() {
     <div className="space-y-6">
       <PlayerHeader player={player} />
       <TrendChart data={metrics} />
-      <SignalFeed signals={signals} />
+      <div>
+        <div className="mb-3 px-1">
+          <div className="eyebrow">Active Signals · {signals.length}</div>
+        </div>
+        <SignalFeed signals={signals} />
+      </div>
     </div>
   );
 }
-

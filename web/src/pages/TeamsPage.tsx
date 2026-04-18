@@ -22,17 +22,29 @@ export function TeamsPage() {
 
   return (
     <div className="space-y-4">
-      {/* League filter */}
-      <div className="flex items-center gap-2">
+      <div className="panel-surface hero-grid px-5 py-5">
+        <div className="eyebrow">Team Directory</div>
+        <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h1 className="text-4xl font-semibold text-ink">Follow team environments, not isolated names.</h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted">Browse organizations, compare roster coverage, and open team pages to see who is driving the latest activity.</p>
+          </div>
+          <div className="rounded-full border border-border bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.22em] text-[#ffd8bd]">
+            {filtered.length} shown
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
         {LEAGUES.map((league) => (
           <button
             key={league}
             type="button"
             onClick={() => setLeagueFilter(league)}
-            className={`rounded-xl px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition ${
+            className={`pill-button ${
               leagueFilter === league
-                ? 'bg-blue-900/40 text-blue-300'
-                : 'text-slate-500 hover:bg-slate-800 hover:text-slate-200'
+                ? 'pill-button-active'
+                : ''
             }`}
           >
             {league}
@@ -48,11 +60,11 @@ export function TeamsPage() {
             <Link
               key={team.id}
               to={`/teams/${team.id}`}
-              className="rounded-2xl border border-border bg-white/[0.03] p-5 transition hover:border-accent/40 hover:bg-white/[0.05]"
+              className="panel-surface block p-5 transition hover:-translate-y-0.5 hover:border-borderStrong hover:bg-white/[0.05]"
             >
-              <div className="text-xs uppercase tracking-[0.2em] text-accent/70">{team.league_name}</div>
-              <div className="mt-2 text-lg font-semibold text-slate-100">{team.name}</div>
-              <div className="mt-3 text-xs uppercase tracking-[0.25em] text-slate-500">
+              <div className="eyebrow text-[#ffd8bd]">{team.league_name}</div>
+              <div className="mt-2 text-2xl font-semibold text-ink">{team.name}</div>
+              <div className="mt-4 inline-flex rounded-full border border-border bg-white/[0.03] px-3 py-1 text-xs uppercase tracking-[0.25em] text-muted">
                 {team.player_count} tracked {team.player_count === 1 ? 'player' : 'players'}
               </div>
             </Link>

@@ -18,34 +18,51 @@ export function AppShell() {
   }, [refreshSession]);
 
   return (
-    <div className="min-h-screen px-3 py-3 sm:px-4 sm:py-4 lg:px-5">
-      <div className="mx-auto max-w-[1640px] overflow-visible">
-        <header className="relative z-20 flex h-14 items-center justify-between overflow-visible rounded-[18px] border border-slate-700/50 bg-slate-900 px-3 sm:px-4">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.34em] text-blue-400">Shyfty</div>
-          <div className="flex items-center gap-3">
-            <nav className="flex items-center gap-1">
+    <div className="min-h-screen px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
+      <div className="mx-auto max-w-[1640px]">
+        <div className="app-frame px-3 py-3 sm:px-4 sm:py-4">
+          <header className="panel-surface hero-grid relative z-20 overflow-visible px-4 py-4 sm:px-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0">
+                <div className="eyebrow flex items-center gap-2">
+                  <span className="accent-dot" />
+                  Signal intelligence
+                </div>
+                <div className="mt-2 flex flex-wrap items-end gap-x-4 gap-y-2">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.38em] text-[#ffd8bd]">Shyfty</div>
+                    <div className="mt-1 max-w-xl text-sm text-muted">
+                      An editorial live board for player volatility, role shifts, and fast-moving team context.
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 lg:items-end">
+                <nav className="flex flex-wrap items-center gap-2">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `rounded-xl px-3 py-2 text-sm transition ${
+                    `pill-button ${
                       isActive
-                        ? 'bg-blue-900/50 text-blue-300'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
+                        ? 'pill-button-active'
+                        : ''
                     }`
                   }
                 >
                   {item.label}
                 </NavLink>
               ))}
-            </nav>
-            <AuthPanel />
-          </div>
-        </header>
-        <main className="relative z-0 mt-3 min-h-[calc(100vh-5.5rem)] overflow-hidden rounded-[20px] border border-slate-700/50 bg-[#0F172A] p-2 sm:p-3">
-          <Outlet />
-        </main>
+                </nav>
+                <AuthPanel />
+              </div>
+            </div>
+          </header>
+          <main className="relative z-0 mt-3 min-h-[calc(100vh-12rem)] rounded-[28px] border border-border bg-[#071120]/70 p-2.5 sm:p-3">
+            <Outlet />
+          </main>
+        </div>
       </div>
     </div>
   );

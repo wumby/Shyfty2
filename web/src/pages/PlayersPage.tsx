@@ -29,20 +29,32 @@ export function PlayersPage() {
 
   return (
     <div className="space-y-4">
-      {/* Search */}
+      <div className="panel-surface hero-grid px-5 py-5">
+        <div className="eyebrow">Player Directory</div>
+        <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h1 className="text-4xl font-semibold text-ink">Scan player profiles with live context.</h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted">Search across teams, positions, and leagues, then drill into trend history and active signal volume.</p>
+          </div>
+          <div className="rounded-full border border-border bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.22em] text-[#ffd8bd]">
+            {filtered.length} shown
+          </div>
+        </div>
+      </div>
+
       <div className="relative">
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search players, teams, positions…"
-          className="w-full rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-blue-500"
+          className="field-shell w-full px-4 py-3 text-sm placeholder:text-muted/70"
         />
         {query && (
           <button
             type="button"
             onClick={() => setQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted transition hover:text-ink"
           >
             ✕
           </button>
@@ -57,12 +69,12 @@ export function PlayersPage() {
             <Link
               key={player.id}
               to={`/players/${player.id}`}
-              className="rounded-2xl border border-border bg-white/[0.03] p-5 transition hover:border-accent/40 hover:bg-white/[0.05]"
+              className="panel-surface block p-5 transition hover:-translate-y-0.5 hover:border-borderStrong hover:bg-white/[0.05]"
             >
-              <div className="text-xs uppercase tracking-[0.2em] text-accent/70">{player.league_name}</div>
-              <div className="mt-2 text-lg font-semibold text-slate-100">{player.name}</div>
+              <div className="eyebrow text-[#ffd8bd]">{player.league_name}</div>
+              <div className="mt-2 text-2xl font-semibold text-ink">{player.name}</div>
               <div className="mt-1 text-sm text-muted">{player.team_name}</div>
-              <div className="mt-3 text-xs uppercase tracking-[0.25em] text-slate-500">{player.position}</div>
+              <div className="mt-4 inline-flex rounded-full border border-border bg-white/[0.03] px-3 py-1 text-xs uppercase tracking-[0.25em] text-muted">{player.position}</div>
             </Link>
           ))}
         </div>
