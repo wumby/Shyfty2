@@ -31,6 +31,7 @@ TARGET_NAME="$DEFAULT_NAME"
 TARGET_EMAIL="$DEFAULT_EMAIL"
 LAST_COUNT=""
 ASSUME_YES=0
+BACKUP_BRANCH=""
 
 usage() {
   cat <<'EOF'
@@ -214,8 +215,12 @@ EOF
   chmod +x "$MSG_FILTER_SCRIPT"
 }
 
-make_backup_branch() {
+set_backup_branch_name() {
   BACKUP_BRANCH="${BACKUP_PREFIX}-${CURRENT_BRANCH//\//-}-$(date +%Y%m%d-%H%M%S)"
+}
+
+make_backup_branch() {
+  [[ -n "$BACKUP_BRANCH" ]] || die "Internal error: backup branch name was not initialized."
   git branch "$BACKUP_BRANCH"
   echo
   echo "Backup branch created: $BACKUP_BRANCH"
@@ -273,6 +278,7 @@ main() {
   # Validate that the range resolves before continuing.
   git rev-parse "HEAD~${LAST_COUNT}" >/dev/null 2>&1 || die "Cannot resolve HEAD~${LAST_COUNT}."
 
+  set_backup_branch_name
   print_target_commits
   detect_noop
 
